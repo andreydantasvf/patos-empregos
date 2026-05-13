@@ -1,0 +1,63 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+}
+
+enum JobStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum JobType {
+  CLT
+  PJ
+  FREELANCER
+  INTERNSHIP
+  TEMPORARY
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@map("users")
+}
+
+model Job {
+  id              String    @id @default(cuid())
+  title           String
+  companyName     String
+  responsibleName String
+  whatsapp        String
+  city            String
+  type            JobType
+  salary          String?
+  description     String
+  requirements    String
+  benefits        String?
+  applicationLink String?
+  status          JobStatus @default(PENDING)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status])
+  @@index([city])
+  @@index([type])
+  @@index([companyName])
+  @@map("jobs")
+}
