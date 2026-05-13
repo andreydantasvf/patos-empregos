@@ -1,35 +1,35 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import { Header } from '@/components/header'
-import { Footer } from '@/components/footer'
-import { JobForm } from '@/components/job-form'
-import { ArrowLeft, Clock, CheckCircle, Zap } from 'lucide-react'
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
+import { JobForm } from "@/components/job-form";
+import { ArrowLeft, CheckCircle, Clock, Zap } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: 'Publicar Vaga | Patos Empregos',
+  title: "Publicar Vaga | Patos Empregos",
   description:
-    'Publique sua vaga de emprego em Patos-PB de forma rápida e gratuita. Alcance candidatos da região em menos de 2 minutos.',
+    "Publique sua vaga de emprego em Patos-PB de forma rápida e gratuita. Alcance candidatos da região em menos de 2 minutos.",
   openGraph: {
-    title: 'Publicar Vaga | Patos Empregos',
+    title: "Publicar Vaga | Patos Empregos",
     description:
-      'Publique sua vaga de emprego em Patos-PB de forma rápida e gratuita.',
+      "Publique sua vaga de emprego em Patos-PB de forma rápida e gratuita.",
   },
-}
+};
 
 const benefits = [
   {
     icon: Clock,
-    text: 'Cadastro em menos de 2 minutos',
+    text: "Cadastro em menos de 2 minutos",
   },
   {
     icon: CheckCircle,
-    text: 'Aprovação em até 24 horas',
+    text: "Aprovação em até 24 horas",
   },
   {
     icon: Zap,
-    text: 'Divulgação em grupos de WhatsApp',
+    text: "Divulgação em grupos de WhatsApp",
   },
-]
+];
 
 export default function PublicarVagaPage() {
   return (
@@ -37,7 +37,6 @@ export default function PublicarVagaPage() {
       <Header />
       <main className="flex-1 bg-muted/30 py-8 md:py-12">
         <div className="container mx-auto px-4">
-          {/* Back Link */}
           <Link
             href="/"
             className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -46,16 +45,15 @@ export default function PublicarVagaPage() {
             Voltar para vagas
           </Link>
 
-          {/* Page Header */}
           <div className="mb-8 text-center">
             <h1 className="mb-3 text-3xl font-bold text-secondary md:text-4xl">
               Publique sua vaga em Patos-PB
             </h1>
             <p className="mx-auto max-w-xl text-muted-foreground">
-              Alcance candidatos qualificados da região de forma rápida, simples e gratuita.
+              Alcance candidatos qualificados da região de forma rápida, simples
+              e gratuita.
             </p>
 
-            {/* Benefits */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-4 md:gap-6">
               {benefits.map((benefit, index) => (
                 <div
@@ -69,11 +67,10 @@ export default function PublicarVagaPage() {
             </div>
           </div>
 
-          {/* Form */}
           <JobForm />
         </div>
       </main>
       <Footer />
     </div>
-  )
+  );
 }

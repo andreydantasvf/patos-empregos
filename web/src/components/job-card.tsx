@@ -172,7 +172,6 @@ export function JobCard({ job }: JobCardProps) {
         </DialogHeader>
 
         <div className="mt-4 space-y-6">
-          {/* Tags */}
           <div className="flex flex-wrap gap-2">
             <Badge variant="outline" className={getTypeColor(job.type)}>
               <Briefcase className="mr-1 h-3 w-3" />

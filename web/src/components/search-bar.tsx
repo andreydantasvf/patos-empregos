@@ -1,26 +1,32 @@
-'use client'
+"use client";
 
-import { Search, SlidersHorizontal, X } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import type { JobFilters, JobType, WorkMode } from '@/lib/types'
+} from "@/components/ui/select";
+import type { JobFilters, JobType, WorkMode } from "@/lib/types";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 
 interface SearchBarProps {
-  filters: JobFilters
-  onFiltersChange: (filters: JobFilters) => void
-  showFilters: boolean
-  onToggleFilters: () => void
+  filters: JobFilters;
+  onFiltersChange: (filters: JobFilters) => void;
+  showFilters: boolean;
+  onToggleFilters: () => void;
 }
 
-const jobTypes: JobType[] = ['CLT', 'PJ', 'Estágio', 'Temporário', 'Freelancer']
-const workModes: WorkMode[] = ['Presencial', 'Remoto', 'Híbrido']
+const jobTypes: JobType[] = [
+  "CLT",
+  "PJ",
+  "Estágio",
+  "Temporário",
+  "Freelancer",
+];
+const workModes: WorkMode[] = ["Presencial", "Remoto", "Híbrido"];
 
 export function SearchBar({
   filters,
@@ -29,20 +35,19 @@ export function SearchBar({
   onToggleFilters,
 }: SearchBarProps) {
   const hasActiveFilters =
-    filters.search || filters.type || filters.workMode || filters.company
+    filters.search || filters.type || filters.workMode || filters.company;
 
   const clearFilters = () => {
     onFiltersChange({
-      search: '',
-      type: '',
-      workMode: '',
-      company: '',
-    })
-  }
+      search: "",
+      type: "",
+      workMode: "",
+      company: "",
+    });
+  };
 
   return (
     <div className="space-y-4">
-      {/* Main Search */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
@@ -60,18 +65,16 @@ export function SearchBar({
           variant="outline"
           size="lg"
           onClick={onToggleFilters}
-          className={`h-12 px-4 ${showFilters ? 'bg-secondary text-secondary-foreground' : ''}`}
+          className={`h-12 px-4 ${showFilters ? "bg-secondary text-secondary-foreground" : ""}`}
         >
           <SlidersHorizontal className="h-5 w-5" />
           <span className="ml-2 hidden sm:inline">Filtros</span>
         </Button>
       </div>
 
-      {/* Expanded Filters */}
       {showFilters && (
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Job Type */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Tipo da vaga
@@ -81,7 +84,7 @@ export function SearchBar({
                 onValueChange={(value) =>
                   onFiltersChange({
                     ...filters,
-                    type: value as JobType | '',
+                    type: value as JobType | "",
                   })
                 }
               >
@@ -99,7 +102,6 @@ export function SearchBar({
               </Select>
             </div>
 
-            {/* Work Mode */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Modalidade
@@ -109,7 +111,7 @@ export function SearchBar({
                 onValueChange={(value) =>
                   onFiltersChange({
                     ...filters,
-                    workMode: value as WorkMode | '',
+                    workMode: value as WorkMode | "",
                   })
                 }
               >
@@ -127,7 +129,6 @@ export function SearchBar({
               </Select>
             </div>
 
-            {/* Company */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Empresa
@@ -143,7 +144,6 @@ export function SearchBar({
             </div>
           </div>
 
-          {/* Clear Filters */}
           {hasActiveFilters && (
             <div className="mt-4 flex justify-end">
               <Button
@@ -160,5 +160,5 @@ export function SearchBar({
         </div>
       )}
     </div>
-  )
+  );
 }
