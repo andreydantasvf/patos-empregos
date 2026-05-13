@@ -1,0 +1,142 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Patos Empregos Color Palette */
+  --background: #FDFDFD;
+  --foreground: #2C3E50;
+  --card: #FFFFFF;
+  --card-foreground: #2C3E50;
+  --popover: #FFFFFF;
+  --popover-foreground: #2C3E50;
+  --primary: #FFD700;
+  --primary-foreground: #2C3E50;
+  --secondary: #2C3E50;
+  --secondary-foreground: #FDFDFD;
+  --muted: #F5F5F5;
+  --muted-foreground: #64748B;
+  --accent: #E67E22;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #2980B9;
+  --chart-1: #FFD700;
+  --chart-2: #E67E22;
+  --chart-3: #2C3E50;
+  --chart-4: #2980B9;
+  --chart-5: #10B981;
+  --radius: 0.75rem;
+  --sidebar: #2C3E50;
+  --sidebar-foreground: #FDFDFD;
+  --sidebar-primary: #FFD700;
+  --sidebar-primary-foreground: #2C3E50;
+  --sidebar-accent: #E67E22;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #3D5166;
+  --sidebar-ring: #2980B9;
+  
+  /* Custom Patos Empregos tokens */
+  --yellow-sol: #FFD700;
+  --orange-vibrant: #E67E22;
+  --blue-professional: #2C3E50;
+  --blue-growth: #2980B9;
+  --white-paper: #FDFDFD;
+  --whatsapp: #25D366;
+}
+
+.dark {
+  --background: #1A252F;
+  --foreground: #FDFDFD;
+  --card: #2C3E50;
+  --card-foreground: #FDFDFD;
+  --popover: #2C3E50;
+  --popover-foreground: #FDFDFD;
+  --primary: #FFD700;
+  --primary-foreground: #2C3E50;
+  --secondary: #3D5166;
+  --secondary-foreground: #FDFDFD;
+  --muted: #3D5166;
+  --muted-foreground: #94A3B8;
+  --accent: #E67E22;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #3D5166;
+  --input: #3D5166;
+  --ring: #2980B9;
+  --chart-1: #FFD700;
+  --chart-2: #E67E22;
+  --chart-3: #FDFDFD;
+  --chart-4: #2980B9;
+  --chart-5: #10B981;
+  --sidebar: #1A252F;
+  --sidebar-foreground: #FDFDFD;
+  --sidebar-primary: #FFD700;
+  --sidebar-primary-foreground: #2C3E50;
+  --sidebar-accent: #E67E22;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #3D5166;
+  --sidebar-ring: #2980B9;
+}
+
+@theme inline {
+  --font-sans: 'Inter', 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Custom Patos Empregos colors */
+  --color-yellow-sol: var(--yellow-sol);
+  --color-orange-vibrant: var(--orange-vibrant);
+  --color-blue-professional: var(--blue-professional);
+  --color-blue-growth: var(--blue-growth);
+  --color-white-paper: var(--white-paper);
+  --color-whatsapp: var(--whatsapp);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
