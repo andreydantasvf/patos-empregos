@@ -1,9 +1,9 @@
-import express from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
-import compression from 'compression';
-import rateLimit from 'express-rate-limit';
 import { apiReference } from '@scalar/express-api-reference';
+import compression from 'compression';
+import cors from 'cors';
+import express, { Express } from 'express';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 
 import { env } from '@config/env';
 import { openApiSpec } from '@config/openapi';
@@ -11,11 +11,15 @@ import { errorMiddleware } from '@shared/middlewares/error.middleware';
 import { logger } from '@shared/utils/logger';
 import { successResponse } from '@shared/utils/response';
 
+import adminRoutes from '@modules/admin/admin.routes';
 import authRoutes from '@modules/auth/auth.routes';
 import jobsRoutes from '@modules/jobs/jobs.routes';
-import adminRoutes from '@modules/admin/admin.routes';
 
-const app = express();
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const app: Express = express();
 
 // ─── Security ────────────────────────────────────────────────────────────────
 app.use(helmet());
@@ -44,7 +48,10 @@ app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 10,
-    message: { statusCode: 429, message: 'Muitas tentativas de login. Tente novamente mais tarde.' },
+    message: {
+      statusCode: 429,
+      message: 'Muitas tentativas de login. Tente novamente mais tarde.',
+    },
   }),
 );
 
@@ -64,17 +71,21 @@ app.get('/health', (_req, res) => {
 });
 
 // ─── API Documentation ────────────────────────────────────────────────────────
-app.get('/openapi.json', (_req, res) => {
-  res.json(openApiSpec);
-});
+if (process.env.NODE_ENV !== 'production') {
+  const apiDoc = JSON.parse(JSON.stringify(openApiSpec));
 
-app.use(
-  '/docs',
-  apiReference({
-    spec: { content: openApiSpec },
-    theme: 'purple',
-  }),
-);
+  app.get('/openapi.json', (_req, res) => {
+    res.json(openApiSpec);
+  });
+
+  app.use(
+    '/docs',
+    apiReference({
+      url: apiDoc,
+      theme: 'purple',
+    }),
+  );
+}
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/auth', authRoutes);

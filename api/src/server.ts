@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { env } from '@config/env';
+import { prisma } from '@config/prisma';
 import { logger } from '@shared/utils/logger';
-import { prisma } from '@shared/providers/prisma.provider';
 import app from './app';
 
 const PORT = parseInt(env.PORT, 10);
@@ -29,8 +30,8 @@ async function bootstrap() {
 
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
     process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-  } catch (error) {
-    logger.error(error, '❌ Falha ao inicializar o servidor');
+  } catch {
+    logger.error('❌ Falha ao inicializar o servidor');
     await prisma.$disconnect();
     process.exit(1);
   }

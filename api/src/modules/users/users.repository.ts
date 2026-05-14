@@ -1,4 +1,4 @@
-import { prisma } from '@shared/providers/prisma.provider';
+import { prisma } from '@config/prisma';
 import type { CreateUserDto } from './users.dto';
 
 export const usersRepository = {

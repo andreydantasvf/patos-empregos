@@ -35,7 +35,16 @@ export const openApiSpec: OpenAPIObject = {
     schemas: {
       CreateJob: {
         type: 'object',
-        required: ['title', 'companyName', 'responsibleName', 'whatsapp', 'city', 'type', 'description', 'requirements'],
+        required: [
+          'title',
+          'companyName',
+          'responsibleName',
+          'whatsapp',
+          'city',
+          'type',
+          'description',
+          'requirements',
+        ],
         properties: {
           title: { type: 'string', example: 'Desenvolvedor Web' },
           companyName: { type: 'string', example: 'Empresa XPTO Ltda' },
@@ -141,7 +150,14 @@ export const openApiSpec: OpenAPIObject = {
           { in: 'query', name: 'page', schema: { type: 'integer', default: 1 } },
           { in: 'query', name: 'limit', schema: { type: 'integer', default: 10 } },
           { in: 'query', name: 'city', schema: { type: 'string' } },
-          { in: 'query', name: 'type', schema: { type: 'string', enum: ['CLT', 'PJ', 'FREELANCER', 'INTERNSHIP', 'TEMPORARY'] } },
+          {
+            in: 'query',
+            name: 'type',
+            schema: {
+              type: 'string',
+              enum: ['CLT', 'PJ', 'FREELANCER', 'INTERNSHIP', 'TEMPORARY'],
+            },
+          },
           { in: 'query', name: 'company', schema: { type: 'string' } },
           { in: 'query', name: 'search', schema: { type: 'string' } },
         ],
@@ -152,7 +168,7 @@ export const openApiSpec: OpenAPIObject = {
         summary: 'Cadastrar nova vaga (público, sem autenticação)',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { '$ref': '#/components/schemas/CreateJob' } } },
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateJob' } } },
         },
         responses: {
           '201': { description: 'Vaga cadastrada — aguardando aprovação' },
@@ -177,7 +193,11 @@ export const openApiSpec: OpenAPIObject = {
         summary: 'Listar todas as vagas (qualquer status)',
         security: [{ bearerAuth: [] }],
         parameters: [
-          { in: 'query', name: 'status', schema: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED'] } },
+          {
+            in: 'query',
+            name: 'status',
+            schema: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED'] },
+          },
           { in: 'query', name: 'page', schema: { type: 'integer' } },
           { in: 'query', name: 'limit', schema: { type: 'integer' } },
           { in: 'query', name: 'search', schema: { type: 'string' } },

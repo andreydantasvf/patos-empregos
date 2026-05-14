@@ -1,9 +1,9 @@
+import { validateBody } from '@shared/middlewares/validate.middleware';
 import { Router } from 'express';
 import { jobsController } from './jobs.controller';
-import { validateBody } from '@shared/middlewares/validate.middleware';
 import { createJobSchema } from './jobs.schema';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * @openapi

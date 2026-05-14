@@ -1,11 +1,9 @@
-import { prisma } from '@shared/providers/prisma.provider';
-import type { JobStatus, JobType, Prisma } from '@prisma/client';
-import type { CreateJobDto, JobFilters } from './jobs.dto';
+import { JobStatus, JobType, Prisma } from '@/generated/prisma/client';
+import { prisma } from '@config/prisma';
 import type { PaginationParams } from '@shared/utils/pagination';
+import type { CreateJobDto, JobFilters } from './jobs.dto';
 
-function buildWhereClause(
-  filters: JobFilters & { status?: JobStatus },
-): Prisma.JobWhereInput {
+function buildWhereClause(filters: JobFilters & { status?: JobStatus }): Prisma.JobWhereInput {
   const where: Prisma.JobWhereInput = {};
 
   if (filters.status) {
@@ -36,10 +34,7 @@ function buildWhereClause(
 }
 
 export const jobsRepository = {
-  async findAll(
-    pagination: PaginationParams,
-    filters: JobFilters & { status?: JobStatus },
-  ) {
+  async findAll(pagination: PaginationParams, filters: JobFilters & { status?: JobStatus }) {
     const where = buildWhereClause(filters);
 
     const [jobs, total] = await prisma.$transaction([

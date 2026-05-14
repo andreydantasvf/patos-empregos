@@ -16,11 +16,12 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"prisma/**/*.ts\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "seed": "node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^5.7.1",
+    "@prisma/client": "^7.8.0",
     "@scalar/express-api-reference": "^0.9.14",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",

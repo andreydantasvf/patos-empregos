@@ -1,9 +1,9 @@
+import { adminMiddleware } from '@shared/middlewares/admin.middleware';
+import { authMiddleware } from '@shared/middlewares/auth.middleware';
 import { Router } from 'express';
 import { adminController } from './admin.controller';
-import { authMiddleware } from '@shared/middlewares/auth.middleware';
-import { adminMiddleware } from '@shared/middlewares/admin.middleware';
 
-const router = Router();
+const router: Router = Router();
 
 // Apply auth + admin guard to all routes in this router
 router.use(authMiddleware, adminMiddleware);

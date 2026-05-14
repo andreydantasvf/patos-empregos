@@ -1,4 +1,4 @@
-import type { JobStatus, JobType } from '@prisma/client';
+import { JobStatus, JobType } from '@/generated/prisma/enums';
 
 export interface JobDto {
   id: string;

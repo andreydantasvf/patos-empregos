@@ -1,9 +1,9 @@
+import { validateBody } from '@shared/middlewares/validate.middleware';
 import { Router } from 'express';
 import { authController } from './auth.controller';
-import { validateBody } from '@shared/middlewares/validate.middleware';
 import { loginSchema } from './auth.schema';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * @openapi

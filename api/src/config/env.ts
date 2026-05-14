@@ -1,5 +1,6 @@
-import { z } from 'zod';
+/* eslint-disable no-console */
 import dotenv from 'dotenv';
+import { z } from 'zod';
 
 dotenv.config();
 
