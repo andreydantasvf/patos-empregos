@@ -1,11 +1,11 @@
-import bcrypt from 'bcryptjs';
-import { usersRepository } from '@modules/users/users.repository';
-import { jwtProvider } from '@shared/providers/jwt.provider';
-import { UnauthorizedError } from '@shared/errors/HttpError';
-import { logger } from '@shared/utils/logger';
 import { env } from '@config/env';
-import type { LoginInput } from './auth.schema';
+import { usersRepository } from '@modules/users/users.repository';
+import { UnauthorizedError } from '@shared/errors/HttpError';
+import { jwtProvider } from '@shared/providers/jwt.provider';
+import { logger } from '@shared/utils/logger';
+import bcrypt from 'bcryptjs';
 import type { LoginResponseDto } from './auth.dto';
+import type { LoginInput, RegisterInput } from './auth.schema';
 
 export const authService = {
   async login(input: LoginInput): Promise<LoginResponseDto> {
@@ -25,6 +25,20 @@ export const authService = {
     const token = jwtProvider.sign({ sub: user.id, email: user.email, role: user.role });
 
     logger.info({ userId: user.id, email: user.email }, '[Auth] Login realizado com sucesso');
+
+    return {
+      user: { id: user.id, email: user.email, role: user.role },
+      token,
+      expiresIn: env.JWT_EXPIRES_IN,
+    };
+  },
+
+  async register(input: RegisterInput): Promise<LoginResponseDto> {
+    const user = await usersRepository.create(input);
+
+    const token = jwtProvider.sign({ sub: user.id, email: user.email, role: user.role });
+
+    logger.info({ userId: user.id, email: user.email }, '[Auth] Registro realizado com sucesso');
 
     return {
       user: { id: user.id, email: user.email, role: user.role },

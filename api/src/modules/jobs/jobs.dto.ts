@@ -1,4 +1,4 @@
-import { JobStatus, JobType } from '@/generated/prisma/enums';
+import { JobPlan, JobType } from '@/generated/prisma/enums';
 
 export interface JobDto {
   id: string;
@@ -14,16 +14,21 @@ export interface JobDto {
   requirements: string;
   benefits: string | null;
   applicationLink: string | null;
-  status: JobStatus;
+  plan: JobPlan;
+  amountPaid: string;
+  paidAt: Date;
+  active: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateJobDto {
+  userId: string;
   bannerUrl: string;
   title: string;
   companyName: string;
   responsibleName: string;
+  email: string;
   whatsapp: string;
   city: string;
   type: JobType;
@@ -32,6 +37,8 @@ export interface CreateJobDto {
   requirements: string;
   benefits?: string | null;
   applicationLink?: string | null;
+  plan: JobPlan;
+  amountPaid: string;
 }
 
 export interface JobFilters {

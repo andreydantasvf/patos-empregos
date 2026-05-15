@@ -1,4 +1,3 @@
-import { apiReference } from '@scalar/express-api-reference';
 import compression from 'compression';
 import cors from 'cors';
 import express, { Express } from 'express';
@@ -6,7 +5,6 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
 import { env } from '@config/env';
-import { openApiSpec } from '@config/openapi';
 import { errorMiddleware } from '@shared/middlewares/error.middleware';
 import { logger } from '@shared/utils/logger';
 import { successResponse } from '@shared/utils/response';
@@ -69,23 +67,6 @@ app.get('/health', (_req, res) => {
     ),
   );
 });
-
-// ─── API Documentation ────────────────────────────────────────────────────────
-if (process.env.NODE_ENV !== 'production') {
-  const apiDoc = JSON.parse(JSON.stringify(openApiSpec));
-
-  app.get('/openapi.json', (_req, res) => {
-    res.json(openApiSpec);
-  });
-
-  app.use(
-    '/docs',
-    apiReference({
-      url: apiDoc,
-      theme: 'purple',
-    }),
-  );
-}
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/auth', authRoutes);

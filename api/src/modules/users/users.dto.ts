@@ -1,3 +1,5 @@
+import { Role } from "@/generated/prisma/enums";
+
 export interface UserDto {
   id: string;
   email: string;
@@ -9,5 +11,5 @@ export interface UserDto {
 export interface CreateUserDto {
   email: string;
   password: string;
-  role?: 'ADMIN';
+  role?: Role;
 }
