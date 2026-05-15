@@ -1,10 +1,14 @@
-import { JobType, Prisma } from '@/generated/prisma/client';
+import { JobStatus, JobType, Prisma } from '@/generated/prisma/client';
 import { prisma } from '@config/prisma';
 import type { PaginationParams } from '@shared/utils/pagination';
 import type { CreateJobDto, JobFilters } from './jobs.dto';
 
 function buildWhereClause(filters: JobFilters): Prisma.JobWhereInput {
   const where: Prisma.JobWhereInput = {};
+
+  if (filters.userId) {
+    where.userId = filters.userId;
+  }
 
   if (filters.city) {
     where.city = { contains: filters.city, mode: 'insensitive' };
@@ -26,6 +30,10 @@ function buildWhereClause(filters: JobFilters): Prisma.JobWhereInput {
     ];
   }
 
+  if (filters.status) {
+    where.status = filters.status;
+  }
+
   return where;
 }
 
@@ -36,7 +44,10 @@ export const jobsRepository = {
     const [jobs, total] = await prisma.$transaction([
       prisma.job.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [
+          { plan: 'desc' },
+          { createdAt: 'desc' },
+        ],
         skip: pagination.skip,
         take: pagination.limit,
       }),
@@ -50,12 +61,20 @@ export const jobsRepository = {
     return prisma.job.findUnique({ where: { id } });
   },
 
-  async create(data: CreateJobDto) {
+  async findByPaymentId(paymentId: string) {
+    return prisma.job.findFirst({ where: { paymentId } });
+  },
+
+  async create(data: CreateJobDto & { paymentId?: string; status?: JobStatus }) {
     return prisma.job.create({
-      data: {
-        ...data,
-        paidAt: new Date(),
-      },
+      data,
+    });
+  },
+
+  async update(id: string, data: Prisma.JobUpdateInput) {
+    return prisma.job.update({
+      where: { id },
+      data,
     });
   },
 

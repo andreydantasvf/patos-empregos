@@ -41,8 +41,14 @@ model User {
   @@map("users")
 }
 
+enum JobStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+}
+
 model Job {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   userId          String
   bannerUrl       String
   title           String
@@ -57,12 +63,14 @@ model Job {
   requirements    String
   benefits        String?
   applicationLink String?
-  plan            JobPlan  @default(BASIC)
+  plan            JobPlan   @default(BASIC)
   amountPaid      String
-  paidAt          DateTime
-  active          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  paidAt          DateTime?
+  status          JobStatus @default(PENDING)
+  expiresAt       DateTime?
+  paymentId       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 
@@ -71,6 +79,6 @@ model Job {
   @@index([type])
   @@index([companyName])
   @@index([plan])
-  @@index([active])
+  @@index([status])
   @@map("jobs")
 }

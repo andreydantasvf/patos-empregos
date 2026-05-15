@@ -1,3 +1,4 @@
+import { Role } from '@/generated/prisma/enums';
 import { env } from '@config/env';
 import { usersRepository } from '@modules/users/users.repository';
 import { UnauthorizedError } from '@shared/errors/HttpError';
@@ -34,7 +35,11 @@ export const authService = {
   },
 
   async register(input: RegisterInput): Promise<LoginResponseDto> {
-    const user = await usersRepository.create(input);
+    const payload = {
+      ...input,
+      role: Role.ENTERPRISE
+    }
+    const user = await usersRepository.create(payload);
 
     const token = jwtProvider.sign({ sub: user.id, email: user.email, role: user.role });
 

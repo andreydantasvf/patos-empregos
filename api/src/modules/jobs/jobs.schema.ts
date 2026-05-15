@@ -15,6 +15,12 @@ export const createJobSchema = z.object({
     .max(100, 'Nome da empresa deve ter no máximo 100 caracteres')
     .trim(),
 
+  email: z
+    .string({ required_error: 'E-mail para recebimento de currículos é obrigatório' })
+    .email('E-mail inválido')
+    .max(255)
+    .trim(),
+
   responsibleName: z
     .string({ required_error: 'Nome do responsável é obrigatório' })
     .min(3, 'Nome do responsável deve ter no mínimo 3 caracteres')
@@ -70,6 +76,11 @@ export const createJobSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal('')),
+
+  plan: z.enum(['BASIC', 'PRO'], {
+    required_error: 'Plano é obrigatório',
+    invalid_type_error: 'Plano inválido',
+  }),
 });
 
 /** Schema usado internamente após injeção do bannerUrl vindo do upload Cloudinary */

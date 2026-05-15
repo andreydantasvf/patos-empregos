@@ -9,8 +9,12 @@ const router: Router = Router();
 
 router.get('/', jobsController.list);
 
+router.get('/me', authMiddleware, jobsController.listByUser);
+
 router.get('/:id', jobsController.getById);
 
 router.post('/', authMiddleware, upload.single('banner'), validateBody(createJobSchema), jobsController.create);
+
+router.post('/webhook/pix', jobsController.webhookPix);
 
 export default router;
