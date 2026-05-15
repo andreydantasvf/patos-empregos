@@ -2,7 +2,7 @@ import { jobsRepository } from './jobs.repository';
 import { NotFoundError } from '@shared/errors/HttpError';
 import { logger } from '@shared/utils/logger';
 import { buildMeta } from '@shared/utils/pagination';
-import type { CreateJobInput, ListJobsQuery } from './jobs.schema';
+import type { CreateJobWithBannerInput, ListJobsQuery } from './jobs.schema';
 import type { JobDto } from './jobs.dto';
 import type { PaginationParams } from '@shared/utils/pagination';
 import type { PaginationMeta } from '@shared/utils/response';
@@ -30,7 +30,7 @@ export const jobsService = {
     return job as JobDto;
   },
 
-  async create(input: CreateJobInput): Promise<JobDto> {
+  async create(input: CreateJobWithBannerInput): Promise<JobDto> {
     const job = await jobsRepository.create({
       ...input,
       salary: input.salary ?? null,

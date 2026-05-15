@@ -2,6 +2,7 @@ import { validateBody } from '@shared/middlewares/validate.middleware';
 import { Router } from 'express';
 import { jobsController } from './jobs.controller';
 import { createJobSchema } from './jobs.schema';
+import { upload } from '@config/cloudinary';
 
 const router: Router = Router();
 
@@ -64,15 +65,23 @@ router.get('/:id', jobsController.getById);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/CreateJob'
+ *             allOf:
+ *               - $ref: '#/components/schemas/CreateJob'
+ *             properties:
+ *               banner:
+ *                 type: string
+ *                 format: binary
+ *                 description: Imagem de banner da vaga (max 5 MB)
+ *             required:
+ *               - banner
  *     responses:
  *       201:
  *         description: Vaga cadastrada e aguardando aprovação
  *       422:
- *         description: Dados inválidos
+ *         description: Dados inválidos ou banner ausente
  */
-router.post('/', validateBody(createJobSchema), jobsController.create);
+router.post('/', upload.single('banner'), validateBody(createJobSchema), jobsController.create);
 
 export default router;

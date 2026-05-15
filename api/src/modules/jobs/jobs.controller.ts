@@ -2,7 +2,9 @@ import type { Request, Response, NextFunction } from 'express';
 import { jobsService } from './jobs.service';
 import { successResponse } from '@shared/utils/response';
 import { parsePagination } from '@shared/utils/pagination';
-import type { CreateJobInput, ListJobsQuery } from './jobs.schema';
+import type { CreateJobInput, CreateJobWithBannerInput, ListJobsQuery } from './jobs.schema';
+import { uploadToCloudinary } from '@config/cloudinary';
+import { ValidationError } from '@shared/errors/HttpError';
 
 export const jobsController = {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -27,7 +29,12 @@ export const jobsController = {
 
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const input = req.body as CreateJobInput;
+      if (!req.file) {
+        throw new ValidationError('Banner da vaga é obrigatório', { banner: ['Banner da vaga é obrigatório'] });
+      }
+
+      const { secure_url: bannerUrl } = await uploadToCloudinary(req.file.buffer);
+      const input: CreateJobWithBannerInput = { ...(req.body as CreateJobInput), bannerUrl };
       const job = await jobsService.create(input);
       res.status(201).json(successResponse(job, 'Vaga cadastrada com sucesso. Aguardando aprovação.'));
     } catch (err) {

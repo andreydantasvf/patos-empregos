@@ -2,6 +2,7 @@ import { JobStatus, JobType } from '@/generated/prisma/enums';
 
 export interface JobDto {
   id: string;
+  bannerUrl: string;
   title: string;
   companyName: string;
   responsibleName: string;
@@ -19,6 +20,7 @@ export interface JobDto {
 }
 
 export interface CreateJobDto {
+  bannerUrl: string;
   title: string;
   companyName: string;
   responsibleName: string;

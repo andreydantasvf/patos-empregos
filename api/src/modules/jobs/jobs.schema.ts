@@ -72,6 +72,11 @@ export const createJobSchema = z.object({
     .or(z.literal('')),
 });
 
+/** Schema usado internamente após injeção do bannerUrl vindo do upload Cloudinary */
+export const createJobWithBannerSchema = createJobSchema.extend({
+  bannerUrl: z.string().url(),
+});
+
 export const listJobsQuerySchema = z.object({
   page: z.string().optional(),
   limit: z.string().optional(),
@@ -82,4 +87,6 @@ export const listJobsQuerySchema = z.object({
 });
 
 export type CreateJobInput = z.infer<typeof createJobSchema>;
+export type CreateJobWithBannerInput = z.infer<typeof createJobWithBannerSchema>;
 export type ListJobsQuery = z.infer<typeof listJobsQuerySchema>;
+
