@@ -29,7 +29,9 @@ enum JobPlan {
 
 model User {
   id        String   @id @default(cuid())
+  nome      String
   email     String   @unique
+  cpf       String   @unique
   password  String
   role      Role     @default(ADMIN)
   createdAt DateTime @default(now())
@@ -38,6 +40,7 @@ model User {
   jobs Job[]
 
   @@index([email])
+  @@index([cpf])
   @@map("users")
 }
 

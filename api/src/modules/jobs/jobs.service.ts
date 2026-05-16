@@ -1,10 +1,11 @@
 import { JobPlan, JobStatus } from '@/generated/prisma/client';
 import { NotFoundError } from '@shared/errors/HttpError';
-import { paymentProvider } from '@shared/providers/payment.provider';
+import { paymentProvider, PixPaymentResponse } from '@shared/providers/payment.provider';
 import { logger } from '@shared/utils/logger';
 import type { PaginationParams } from '@shared/utils/pagination';
 import { buildMeta } from '@shared/utils/pagination';
 import type { PaginationMeta } from '@shared/utils/response';
+import { usersService } from '../users/users.service';
 import type { JobDto } from './jobs.dto';
 import { jobsRepository } from './jobs.repository';
 import type { CreateJobWithBannerInput, ListJobsQuery } from './jobs.schema';
@@ -24,7 +25,7 @@ const PLAN_DAYS = {
 export const jobsService = {
   async listPublic(
     pagination: PaginationParams,
-    query: ListJobsQuery
+    query: ListJobsQuery,
   ): Promise<{ jobs: JobDto[]; meta: PaginationMeta }> {
     const { jobs, total } = await jobsRepository.findAll(pagination, {
       city: query.city,
@@ -35,9 +36,12 @@ export const jobsService = {
     });
 
     // TODO: Filter expired jobs if not handled by a cronjob, or update their status here.
-    const activeJobs = jobs.filter(job => !job.expiresAt || job.expiresAt > new Date());
+    const activeJobs = jobs.filter((job) => !job.expiresAt || job.expiresAt > new Date());
 
-    return { jobs: activeJobs as JobDto[], meta: buildMeta(activeJobs.length, pagination.page, pagination.limit) };
+    return {
+      jobs: activeJobs as JobDto[],
+      meta: buildMeta(total, pagination.page, pagination.limit),
+    };
   },
 
   async listByUser(
@@ -59,16 +63,35 @@ export const jobsService = {
     return job as JobDto;
   },
 
-  async create(userId: string, input: CreateJobWithBannerInput, userEmail: string): Promise<{ job: JobDto; payment: any }> {
+  async create(
+    userId: string,
+    input: CreateJobWithBannerInput,
+  ): Promise<{ job: JobDto; payment: PixPaymentResponse }> {
+    const user = await usersService.findById(userId);
+    if (!user) {
+      throw new NotFoundError('Usuário');
+    }
+
     const amount = PLAN_PRICES[input.plan as keyof typeof PLAN_PRICES] || 20;
-    
+
     // Generate Pix
-    const payment = await paymentProvider.generatePixPayment(amount, `Pagamento de vaga - ${input.plan}`, userEmail);
+    const payment = await paymentProvider.generatePixPayment({
+      transaction_amount: amount,
+      description: `Pagamento de vaga - ${input.plan}`,
+      payer: {
+        name: user.nome,
+        email: user.email,
+        identification: {
+          type: 'CPF',
+          number: user.cpf || '00000000000',
+        },
+      },
+    });
 
     const job = await jobsRepository.create({
       ...input,
       userId,
-      email: userEmail,
+      email: user.email,
       salary: input.salary ?? null,
       benefits: input.benefits ?? null,
       applicationLink: input.applicationLink || null,
@@ -108,5 +131,5 @@ export const jobsService = {
     });
 
     logger.info({ jobId: job.id }, '[Jobs] Vaga ativada com sucesso pelo webhook');
-  }
+  },
 };

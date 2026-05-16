@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
 import { env } from '@config/env';
 import { AppError } from '@shared/errors/AppError';
+import jwt from 'jsonwebtoken';
 
 export interface JwtPayload {
   sub: string;

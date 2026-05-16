@@ -1,11 +1,11 @@
 import { uploadToCloudinary } from '@/shared/providers/cloudinary.provider';
 import { UnauthorizedError, ValidationError } from '@shared/errors/HttpError';
+import { paymentProvider } from '@shared/providers/payment.provider';
 import { parsePagination } from '@shared/utils/pagination';
 import { successResponse } from '@shared/utils/response';
 import type { NextFunction, Request, Response } from 'express';
 import type { CreateJobInput, CreateJobWithBannerInput, ListJobsQuery } from './jobs.schema';
 import { jobsService } from './jobs.service';
-import { paymentProvider } from '@shared/providers/payment.provider';
 
 export const jobsController = {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -43,13 +43,22 @@ export const jobsController = {
     try {
       if (!req.user) throw new UnauthorizedError();
       if (!req.file) {
-        throw new ValidationError('Banner da vaga é obrigatório', { banner: ['Banner da vaga é obrigatório'] });
+        throw new ValidationError('Banner da vaga é obrigatório', {
+          banner: ['Banner da vaga é obrigatório'],
+        });
       }
 
       const { secure_url: bannerUrl } = await uploadToCloudinary(req.file.buffer);
       const input: CreateJobWithBannerInput = { ...(req.body as CreateJobInput), bannerUrl };
-      const { job, payment } = await jobsService.create(req.user.sub, input, req.user.email);
-      res.status(201).json(successResponse({ job, payment }, 'Vaga cadastrada com sucesso. Aguardando pagamento do PIX.'));
+      const { job, payment } = await jobsService.create(req.user.sub, input);
+      res
+        .status(201)
+        .json(
+          successResponse(
+            { job, payment },
+            'Vaga cadastrada com sucesso. Aguardando pagamento do PIX.',
+          ),
+        );
     } catch (err) {
       next(err);
     }
@@ -59,7 +68,7 @@ export const jobsController = {
     try {
       const signature = req.headers['x-signature'] as string;
       const requestId = req.headers['x-request-id'] as string;
-      const dataId = req.query['data.id'] as string || req.body?.data?.id;
+      const dataId = (req.query['data.id'] as string) || req.body?.data?.id;
 
       const isValid = paymentProvider.validateWebhook({
         signature,

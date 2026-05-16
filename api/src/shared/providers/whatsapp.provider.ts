@@ -1,15 +1,14 @@
-import axios from "axios";
-import dotenv from "dotenv";
-dotenv.config();
+import axios from 'axios';
+import { env } from '../../config/env';
 
 interface SendGroupMessageDTO {
   groupId: string;
   message: string;
 }
 
-const evolutionUrl = process.env.EVOLUTION_URL;
-const evolutionApiKey = process.env.EVOLUTION_API_KEY;
-const evolutionInstance = process.env.EVOLUTION_INSTANCE;
+const evolutionUrl = env.EVOLUTION_URL;
+const evolutionApiKey = env.EVOLUTION_API_KEY;
+const evolutionInstance = env.EVOLUTION_INSTANCE;
 
 export const whatsappProvider = {
   async sendGroupMessage({ groupId, message }: SendGroupMessageDTO): Promise<void> {
