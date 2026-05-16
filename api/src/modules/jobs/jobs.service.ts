@@ -1,6 +1,11 @@
 import { JobPlan, JobStatus } from '@/generated/prisma/client';
+import { AppError } from '@/shared/errors';
 import { NotFoundError } from '@shared/errors/HttpError';
-import { paymentProvider, PixPaymentResponse } from '@shared/providers/payment.provider';
+import {
+  paymentProvider,
+  PixPaymentResponse,
+  WebhookValidationParams,
+} from '@shared/providers/payment.provider';
 import { logger } from '@shared/utils/logger';
 import type { PaginationParams } from '@shared/utils/pagination';
 import { buildMeta } from '@shared/utils/pagination';
@@ -131,5 +136,30 @@ export const jobsService = {
     });
 
     logger.info({ jobId: job.id }, '[Jobs] Vaga ativada com sucesso pelo webhook');
+  },
+
+  async webhookPix(data: WebhookValidationParams, paymentId: string): Promise<void> {
+    const isValid = paymentProvider.validateWebhook(data);
+    if (!isValid) {
+      throw new AppError('Webhook inválido', 400);
+    }
+
+    const details = await paymentProvider.getPaymentDetails(String(paymentId));
+    if (
+      (details.status === 'processed' && details.payment_status_detail === 'accredited') ||
+      details.status_detail === 'accredited'
+    ) {
+      await jobsService.activateJob(String(paymentId));
+      return;
+    }
+
+    logger.info(
+      {
+        paymentId,
+        status: details.status,
+        paymentStatusDetail: details.payment_status_detail,
+      },
+      '[Jobs] Webhook recebido, mas pagamento ainda não está confirmado',
+    );
   },
 };
