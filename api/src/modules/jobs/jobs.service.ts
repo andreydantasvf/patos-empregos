@@ -63,7 +63,7 @@ export const jobsService = {
     const amount = PLAN_PRICES[input.plan as keyof typeof PLAN_PRICES] || 20;
     
     // Generate Pix
-    const payment = await paymentProvider.generatePixPayment(amount, `Pagamento de vaga - ${input.plan}`);
+    const payment = await paymentProvider.generatePixPayment(amount, `Pagamento de vaga - ${input.plan}`, userEmail);
 
     const job = await jobsRepository.create({
       ...input,

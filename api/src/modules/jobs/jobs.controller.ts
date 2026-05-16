@@ -1,10 +1,11 @@
-import { uploadToCloudinary } from '@config/cloudinary';
+import { uploadToCloudinary } from '@/shared/providers/cloudinary.provider';
 import { UnauthorizedError, ValidationError } from '@shared/errors/HttpError';
 import { parsePagination } from '@shared/utils/pagination';
 import { successResponse } from '@shared/utils/response';
 import type { NextFunction, Request, Response } from 'express';
 import type { CreateJobInput, CreateJobWithBannerInput, ListJobsQuery } from './jobs.schema';
 import { jobsService } from './jobs.service';
+import { paymentProvider } from '@shared/providers/payment.provider';
 
 export const jobsController = {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -56,11 +57,32 @@ export const jobsController = {
 
   async webhookPix(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // In a real scenario, validate the webhook signature here
-      const { paymentId } = req.body;
-      if (paymentId) {
-        await jobsService.activateJob(paymentId);
+      const signature = req.headers['x-signature'] as string;
+      const requestId = req.headers['x-request-id'] as string;
+      const dataId = req.query['data.id'] as string || req.body?.data?.id;
+
+      const isValid = paymentProvider.validateWebhook({
+        signature,
+        requestId,
+        dataId,
+      });
+
+      if (!isValid) {
+        // Se a validação falhar e houver um secret configurado, pode ser uma fraude.
+        // Como o provider retorna true caso não tenha secret, só barramos se for false.
+        res.status(403).send('Forbidden');
+        return;
       }
+
+      const paymentId = req.body?.data?.id || req.body?.id || dataId;
+
+      if (paymentId) {
+        const details = await paymentProvider.getPaymentDetails(String(paymentId));
+        if (details.status === 'approved') {
+          await jobsService.activateJob(String(paymentId));
+        }
+      }
+
       res.status(200).send('OK');
     } catch (err) {
       next(err);

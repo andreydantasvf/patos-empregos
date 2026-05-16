@@ -1,23 +1,37 @@
-/**
- * WhatsApp Integration Provider (placeholder)
- *
- * This module is prepared for future integration with the WhatsApp Business API
- * or third-party providers such as Z-API, Twilio, or Evolution API.
- *
- * Planned features:
- *  - Send notification when a job is approved
- *  - Notify responsible person via WhatsApp
- *  - Automated job application via WhatsApp
- */
+import axios from "axios";
+import dotenv from "dotenv";
+dotenv.config();
 
-export interface WhatsAppMessage {
-  to: string;
-  body: string;
+interface SendGroupMessageDTO {
+  groupId: string;
+  message: string;
 }
 
+const evolutionUrl = process.env.EVOLUTION_URL;
+const evolutionApiKey = process.env.EVOLUTION_API_KEY;
+const evolutionInstance = process.env.EVOLUTION_INSTANCE;
+
 export const whatsappProvider = {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async sendMessage(_message: WhatsAppMessage): Promise<void> {
-    throw new Error('WhatsApp provider not yet implemented');
+  async sendGroupMessage({ groupId, message }: SendGroupMessageDTO): Promise<void> {
+    if (!evolutionUrl || !evolutionApiKey || !evolutionInstance) {
+      throw new Error('WhatsApp provider not yet implemented');
+    }
+
+    const response = await axios.post(
+      `${evolutionUrl}/api/message/send-group/${evolutionInstance}`,
+      {
+        number: groupId,
+        text: message,
+      },
+      {
+        headers: {
+          apikey: evolutionApiKey,
+        },
+      },
+    );
+
+    if (response.status !== 200) {
+      throw new Error('Failed to send message');
+    }
   },
 };

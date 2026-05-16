@@ -1,5 +1,5 @@
 import { authMiddleware } from '@/shared/middlewares/auth.middleware';
-import { upload } from '@config/cloudinary';
+import { upload } from '@/shared/providers/cloudinary.provider';
 import { validateBody } from '@shared/middlewares/validate.middleware';
 import { Router } from 'express';
 import { jobsController } from './jobs.controller';

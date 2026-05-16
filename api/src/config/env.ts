@@ -16,6 +16,15 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().min(1, 'CLOUDINARY_CLOUD_NAME is required'),
   CLOUDINARY_API_KEY: z.string().min(1, 'CLOUDINARY_API_KEY is required'),
   CLOUDINARY_API_SECRET: z.string().min(1, 'CLOUDINARY_API_SECRET is required'),
+  EVOLUTION_API_KEY: z.string().min(1, 'EVOLUTION_API_KEY is required'),
+  EVOLUTION_URL: z.string().min(1, 'EVOLUTION_URL is required'),
+  WHATSAPP_GROUP_ID: z.string().min(1, 'EVOLUTION_GROUP_ID is required'),
+  EVOLUTION_INSTANCE: z.string().min(1, 'EVOLUTION_INSTANCE is required'),
+  // MERCADO_PAGO_ACCESS_TOKEN: z.string().min(1, 'MERCADO_PAGO_ACCESS_TOKEN is required'),
+  // MERCADO_PAGO_PUBLIC_KEY: z.string().min(1, 'MERCADO_PAGO_PUBLIC_KEY is required'),
+  MERCADO_PAGO_WEBHOOK_SECRET: z.string().min(1, 'MERCADO_PAGO_WEBHOOK_SECRET is required'),
+  TESTE_MERCADO_PAGO_PUBLIC_KEY: z.string().min(1, 'TESTE_MERCADO_PAGO_PUBLIC_KEY is required'),
+  TESTE_MERCADO_PAGO_ACCESS_TOKEN: z.string().min(1, 'TESTE_MERCADO_PAGO_ACCESS_TOKEN is required'),
 });
 
 const parsed = envSchema.safeParse(process.env);
