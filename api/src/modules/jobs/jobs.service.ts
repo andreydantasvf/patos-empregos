@@ -12,8 +12,8 @@ import { jobsRepository } from './jobs.repository';
 import type { CreateJobWithImageInput, ListJobsQuery } from './jobs.schema';
 
 const PLAN_PRICES: Record<string, number> = {
-  BASIC: 1.00,
-  FEATURED: 79.00,
+  BASIC: 39.99,
+  FEATURED: 79.99,
 };
 
 const PLAN_DAYS: Record<string, number> = {
