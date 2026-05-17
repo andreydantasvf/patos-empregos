@@ -9,16 +9,14 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import type { JobDto, JobType } from "@/lib/types";
-
-function capitalize(s: string): string {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-}
 import {
   Building2,
+  CalendarClock,
   ChevronRight,
   Clock,
   DollarSign,
   Loader2,
+  Star,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,7 +28,11 @@ interface JobCardProps {
   isRenewing?: boolean;
 }
 
-function formatDate(dateStr: string): string {
+function capitalize(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+function formatRelativeDate(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diff = now.getTime() - date.getTime();
@@ -42,6 +44,15 @@ function formatDate(dateStr: string): string {
   if (days < 30)
     return `${Math.floor(days / 7)} semana${Math.floor(days / 7) > 1 ? "s" : ""} atrás`;
   return `${Math.floor(days / 30)} mês${Math.floor(days / 30) > 1 ? "es" : ""} atrás`;
+}
+
+function formatExpiresAt(dateStr: string): { label: string; urgent: boolean } | null {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const days = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (days <= 0) return null; // já encerrada — não mostrar no card público
+  return null; // mais de 7 dias: não vale a pena mostrar no card
 }
 
 function getTypeColor(type: JobType): string {
@@ -69,7 +80,7 @@ const jobTypeLabels: Record<JobType, string> = {
   FREELANCER: "Freelancer",
 };
 
-function formatExpiresAt(dateStr: string): string {
+function formatExpiresAtFull(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("pt-BR");
 }
 
@@ -83,9 +94,18 @@ export function JobCard({
   isRenewing = false,
 }: JobCardProps) {
   const companyName = job.company?.name ?? "—";
+  const publishDate = job.published_at ?? job.createdAt;
+  const expiresInfo = job.expires_at ? formatExpiresAt(job.expires_at) : null;
 
   return (
-    <Card className="group relative overflow-hidden border-border bg-card transition-all duration-300">
+    <Card className={`group relative overflow-hidden border-border bg-card transition-all duration-300 ${job.is_featured ? "ring-2 ring-amber-400/40 border-amber-300/60" : ""}`}>
+      {job.is_featured && (
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-900 shadow">
+          <Star className="h-3 w-3 fill-amber-900" />
+          Destaque
+        </div>
+      )}
+
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-1">
@@ -97,8 +117,22 @@ export function JobCard({
               <span className="line-clamp-1">{companyName}</span>
             </div>
           </div>
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xl font-bold text-primary">
-            {companyInitial(job)}
+
+          {/* Logo ou inicial */}
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 overflow-hidden">
+            {job.company?.logo_url ? (
+              <Image
+                src={job.company.logo_url}
+                alt={companyName}
+                width={48}
+                height={48}
+                className="object-contain"
+              />
+            ) : (
+              <span className="text-xl font-bold text-primary">
+                {companyInitial(job)}
+              </span>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -115,7 +149,7 @@ export function JobCard({
               <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100">
                 Ativa
                 {job.expires_at
-                  ? ` — expira em ${formatExpiresAt(job.expires_at)}`
+                  ? ` — expira em ${formatExpiresAtFull(job.expires_at)}`
                   : ""}
               </Badge>
             )}
@@ -142,7 +176,7 @@ export function JobCard({
           />
         </div>
 
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-3 flex flex-wrap gap-2">
           <Badge variant="outline" className={getTypeColor(job.type)}>
             {jobTypeLabels[job.type]}
           </Badge>
@@ -151,7 +185,7 @@ export function JobCard({
           </Badge>
         </div>
 
-        <div className="space-y-2 text-sm text-muted-foreground">
+        <div className="space-y-1.5 text-sm text-muted-foreground">
           {job.salary && (
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 shrink-0 text-accent" />
@@ -160,8 +194,14 @@ export function JobCard({
           )}
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 shrink-0 text-accent" />
-            <span>{formatDate(job.createdAt)}</span>
+            <span>Publicado {formatRelativeDate(publishDate)}</span>
           </div>
+          {expiresInfo && (
+            <div className={`flex items-center gap-2 ${expiresInfo.urgent ? "text-red-600 font-medium" : "text-orange-600"}`}>
+              <CalendarClock className="h-4 w-4 shrink-0" />
+              <span>{expiresInfo.label}</span>
+            </div>
+          )}
         </div>
       </CardContent>
 
