@@ -21,6 +21,33 @@ export const adminService = {
     return { jobs: jobs as JobDto[], meta: buildMeta(total, pagination.page, pagination.limit) };
   },
 
+  async update(id: string, data: Partial<JobDto>): Promise<JobDto> {
+    const job = await jobsRepository.findById(id);
+    if (!job) throw new NotFoundError('Vaga');
+
+    if (data.status === 'ACTIVE') {
+      // Se for ativar a vaga, garantir que ela tenha data de expiração
+      if (!job.expiresAt || job.expiresAt < new Date()) {
+        const expiresAt = new Date();
+
+        if (job.plan === 'BASIC') {
+          expiresAt.setDate(expiresAt.getDate() + 7);
+        } else if (job.plan === 'PRO') {
+          expiresAt.setDate(expiresAt.getDate() + 15);
+          data.expiresAt = expiresAt;
+        }
+      }
+    }
+
+    if (data.status === 'EXPIRED') {
+      data.expiresAt = null;
+    }
+
+    const updatedJob = await jobsRepository.update(id, data);
+    logger.info({ jobId: id, status: data.status }, '[Admin] Status da vaga atualizado');
+    return updatedJob as JobDto;
+  },
+
   async remove(id: string): Promise<void> {
     const job = await jobsRepository.findById(id);
     if (!job) throw new NotFoundError('Vaga');

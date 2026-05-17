@@ -1,6 +1,7 @@
 import { parsePagination } from '@shared/utils/pagination';
 import { successResponse } from '@shared/utils/response';
 import type { NextFunction, Request, Response } from 'express';
+import { UpdateStatusDto } from './admin.schema';
 import { adminService } from './admin.service';
 
 export const adminController = {
@@ -15,6 +16,16 @@ export const adminController = {
         search,
       });
       res.json(successResponse(jobs, 'Vagas listadas', meta));
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async updateStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { status } = req.body as UpdateStatusDto;
+      const updatedJob = await adminService.update(req.params.id, { status });
+      res.json(successResponse(updatedJob, 'Status da vaga atualizado'));
     } catch (err) {
       next(err);
     }
