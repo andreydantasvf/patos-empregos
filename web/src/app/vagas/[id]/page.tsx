@@ -1,28 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { JobDto } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
+  ArrowLeft,
   Briefcase,
   Building2,
+  Calendar,
   CheckCircle2,
   Clock,
   DollarSign,
   ExternalLink,
   Gift,
+  Info,
   MapPin,
   MessageCircle,
-  ArrowLeft,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { LoadingSkeleton } from "@/components/loading-skeleton";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 function formatDate(dateStr: string): string {
@@ -97,26 +99,27 @@ export default function JobDetailPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
-        <Button variant="ghost" asChild className="mb-6 -ml-4 text-muted-foreground">
-          <Link href="/">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar para vagas
-          </Link>
-        </Button>
+        <Link
+          href="/"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar para vagas
+        </Link>
 
         <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
           {job.bannerUrl && (
-            <div className="w-full h-64 relative bg-muted">
+            <div className="w-full h-120 relative bg-muted">
               <Image
                 src={job.bannerUrl}
                 alt={job.title}
                 fill
-                className="object-cover"
                 sizes="(max-width: 768px) 100vw, 800px"
+                className="object-contain"
               />
             </div>
           )}
-          
+
           <div className="p-6 md:p-8">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
               <div>
@@ -134,24 +137,68 @@ export default function JobDetailPage() {
             </div>
 
             <div className="flex flex-wrap gap-3 mb-8">
-              <Badge variant="secondary" className="px-3 py-1 text-sm font-medium">
+              <Badge
+                variant="secondary"
+                className="px-3 py-1 text-sm font-medium"
+              >
                 <Briefcase className="mr-2 h-4 w-4" />
                 {jobTypeLabels[job.type] || job.type}
               </Badge>
-              <Badge variant="outline" className="px-3 py-1 text-sm font-medium">
+              <Badge
+                variant="outline"
+                className="px-3 py-1 text-sm font-medium"
+              >
                 <MapPin className="mr-2 h-4 w-4" />
                 {job.city}
               </Badge>
               {job.salary && (
-                <Badge variant="outline" className="px-3 py-1 text-sm font-medium bg-green-50 text-green-700 border-green-200">
+                <Badge
+                  variant="outline"
+                  className="px-3 py-1 text-sm font-medium bg-green-50 text-green-700 border-green-200"
+                >
                   <DollarSign className="mr-1 h-4 w-4" />
                   {job.salary}
                 </Badge>
               )}
-              <Badge variant="outline" className="px-3 py-1 text-sm font-medium text-muted-foreground">
+              <Badge
+                variant="outline"
+                className="px-3 py-1 text-sm font-medium text-muted-foreground"
+              >
                 <Clock className="mr-2 h-4 w-4" />
                 Publicado {formatDate(job.createdAt)}
               </Badge>
+              <Badge
+                variant="outline"
+                className="px-3 py-1 text-sm font-medium text-muted-foreground"
+              >
+                <Gift className="mr-2 h-4 w-4" />
+                Plano {job.plan === "BASIC" ? "Básico" : "PRO"}
+              </Badge>
+              <Badge
+                variant="outline"
+                className="px-3 py-1 text-sm font-medium text-muted-foreground"
+              >
+                <Info className="mr-2 h-4 w-4" />
+                {job.status === "ACTIVE"
+                  ? "Ativa"
+                  : job.status === "PENDING"
+                    ? "Pendente"
+                    : "Expirada"}
+              </Badge>
+              {job.expiresAt && (
+                <Badge
+                  variant="destructive"
+                  className="px-3 py-1 text-sm font-medium text-muted"
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Expirou em:{" "}
+                  {new Date(job.expiresAt || "").toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "2-digit",
+                  })}
+                </Badge>
+              )}
             </div>
 
             <div className="space-y-8">
@@ -188,16 +235,33 @@ export default function JobDetailPage() {
               )}
             </div>
 
-            <div className="mt-10 pt-8 border-t flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="flex-1 bg-whatsapp text-white hover:bg-whatsapp/90 text-base">
-                <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+            <div className="mt-10 pt-8 border-t grid sm:flex-row gap-4">
+              <Button
+                asChild
+                size="lg"
+                className="flex-1 bg-whatsapp text-white hover:bg-whatsapp/90 text-base"
+              >
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <MessageCircle className="mr-2 h-5 w-5" />
                   Candidatar via WhatsApp
                 </a>
               </Button>
               {job.applicationLink && (
-                <Button asChild size="lg" variant="outline" className="flex-1 text-base">
-                  <a href={job.applicationLink} target="_blank" rel="noopener noreferrer">
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="flex-1 text-base"
+                >
+                  <a
+                    href={job.applicationLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <ExternalLink className="mr-2 h-5 w-5" />
                     Link de candidatura
                   </a>

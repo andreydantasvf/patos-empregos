@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -15,23 +21,36 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/api";
-import { LoginResponseDto } from "@/lib/types";
 import { useAuth } from "@/lib/auth-context";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { hasSavedJobDraft } from "@/lib/job-draft";
+import { LoginResponseDto } from "@/lib/types";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 
 const formSchema = z.object({
   email: z.string().email({ message: "E-mail inválido." }).toLowerCase().trim(),
-  password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres." }),
+  password: z
+    .string()
+    .min(6, { message: "A senha deve ter pelo menos 6 caracteres." }),
 });
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isPromptOpen, setIsPromptOpen] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("draft") === "1") {
+      setIsPromptOpen(true);
+    }
+  }, [searchParams]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,8 +70,10 @@ export default function LoginPage() {
 
       login(res.data.user, res.data.token);
       toast.success("Login realizado com sucesso!");
-      
-      if (res.data.user.role === 'ADMIN') {
+
+      if (hasSavedJobDraft()) {
+        router.push("/publicar-vaga");
+      } else if (res.data.user.role === "ADMIN") {
         router.push("/admin/vagas");
       } else {
         router.push("/minhas-vagas");
@@ -66,11 +87,33 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <Dialog open={isPromptOpen} onOpenChange={setIsPromptOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Salvamos sua vaga</DialogTitle>
+            <DialogDescription>
+              Você ainda não estava autenticado. Seus dados foram guardados para
+              que você possa entrar e continuar a publicação sem perder o que já
+              preencheu.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              onClick={() => setIsPromptOpen(false)}
+              className="w-full sm:w-auto"
+            >
+              Entendi
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Header />
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-8 bg-card p-8 rounded-xl shadow-lg border">
           <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-tight">Entrar na sua conta</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Entrar na sua conta
+            </h1>
             <p className="text-muted-foreground mt-2">
               Gerencie suas vagas e alcance os melhores candidatos.
             </p>
@@ -112,7 +155,10 @@ export default function LoginPage() {
 
           <div className="text-center text-sm">
             Não tem uma conta?{" "}
-            <Link href="/register" className="text-primary hover:underline font-medium">
+            <Link
+              href="/register"
+              className="text-primary hover:underline font-medium"
+            >
               Cadastre-se
             </Link>
           </div>

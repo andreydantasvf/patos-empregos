@@ -19,6 +19,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import {
+  clearJobDraft,
+  dataUrlToFile,
+  fileToDataUrl,
+  loadJobDraft,
+  saveJobDraft,
+} from "@/lib/job-draft";
 import type { JobPlan, JobType } from "@/lib/types";
 import {
   Briefcase,
@@ -27,11 +35,11 @@ import {
   Crown,
   FileText,
   Image as ImageIcon,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const jobTypes: JobType[] = [
@@ -79,24 +87,47 @@ const initialFormData: CreateJobFormValues = {
   requirements: "",
   benefits: "",
   applicationLink: "",
-  plan: "BASIC",
+  plan: "PRO",
 };
 
 export function JobForm() {
   const router = useRouter();
-  const [formData, setFormData] = useState<CreateJobFormValues>(initialFormData);
+  const { user, token, isLoading: authLoading } = useAuth();
+  const [formData, setFormData] =
+    useState<CreateJobFormValues>(initialFormData);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [savedBannerMeta, setSavedBannerMeta] = useState<{
+    name: string;
+    type: string;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [pixData, setPixData] = useState<any>(null);
 
+  useEffect(() => {
+    const savedDraft = loadJobDraft();
+
+    if (!savedDraft) {
+      return;
+    }
+
+    setFormData(savedDraft.formData);
+    setBannerPreview(savedDraft.banner?.dataUrl ?? null);
+    setSavedBannerMeta(
+      savedDraft.banner
+        ? { name: savedDraft.banner.name, type: savedDraft.banner.type }
+        : null,
+    );
+  }, []);
+
   const formatWhatsApp = (value: string) => {
     const numbers = value.replace(/\D/g, "");
     if (numbers.length <= 2) return numbers;
-    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 7)
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
     return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
   };
 
@@ -111,7 +142,10 @@ export function JobForm() {
     }
   };
 
-  const handleSelectChange = (name: keyof CreateJobFormValues, value: string) => {
+  const handleSelectChange = (
+    name: keyof CreateJobFormValues,
+    value: string,
+  ) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -123,6 +157,7 @@ export function JobForm() {
         return;
       }
       setBannerFile(file);
+      setSavedBannerMeta(null);
       const url = URL.createObjectURL(file);
       setBannerPreview(url);
     }
@@ -131,7 +166,62 @@ export function JobForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!bannerFile) {
+    if (authLoading) {
+      toast.info("Aguarde enquanto verificamos sua conta.");
+      return;
+    }
+
+    if (!user || !token) {
+      let bannerDraft: { dataUrl: string; name: string; type: string } | null =
+        null;
+
+      if (bannerFile) {
+        try {
+          const dataUrl = await fileToDataUrl(bannerFile);
+          bannerDraft = {
+            dataUrl,
+            name: bannerFile.name,
+            type: bannerFile.type,
+          };
+        } catch {
+          toast.error(
+            "Salvamos apenas os campos do formulário. O banner precisará ser reenviado após o login.",
+          );
+        }
+      } else if (bannerPreview?.startsWith("data:") && savedBannerMeta) {
+        bannerDraft = {
+          dataUrl: bannerPreview,
+          name: savedBannerMeta.name,
+          type: savedBannerMeta.type,
+        };
+      }
+
+      saveJobDraft({
+        formData,
+        banner: bannerDraft,
+        savedAt: new Date().toISOString(),
+      });
+
+      toast.info("Salvamos seu rascunho e você será levado para o login.");
+      router.push("/login?draft=1");
+      return;
+    }
+
+    let uploadBanner = bannerFile;
+
+    if (
+      !uploadBanner &&
+      bannerPreview?.startsWith("data:") &&
+      savedBannerMeta
+    ) {
+      uploadBanner = await dataUrlToFile(
+        bannerPreview,
+        savedBannerMeta.name,
+        savedBannerMeta.type,
+      );
+    }
+
+    if (!uploadBanner) {
       toast.error("O banner da vaga é obrigatório.");
       return;
     }
@@ -140,7 +230,7 @@ export function JobForm() {
 
     try {
       const payload = new FormData();
-      payload.append("banner", bannerFile);
+      payload.append("banner", uploadBanner);
       payload.append("title", formData.title);
       payload.append("companyName", formData.companyName);
       payload.append("email", formData.email);
@@ -154,21 +244,25 @@ export function JobForm() {
 
       if (formData.salary) payload.append("salary", formData.salary);
       if (formData.benefits) payload.append("benefits", formData.benefits);
-      if (formData.applicationLink) payload.append("applicationLink", formData.applicationLink);
+      if (formData.applicationLink)
+        payload.append("applicationLink", formData.applicationLink);
 
       const res = await apiFetch<any>("/jobs", {
         method: "POST",
         body: payload,
       });
 
+      clearJobDraft();
       setPixData(res.data.payment);
       setIsSuccess(true);
-      toast.success("Vaga criada com sucesso! Realize o pagamento para ativá-la.");
+      toast.success(
+        "Vaga criada com sucesso! Realize o pagamento para ativá-la.",
+      );
     } catch (error: any) {
       if (error.errors) {
         Object.values(error.errors).forEach((errMsgs: any) => {
           if (Array.isArray(errMsgs)) {
-            errMsgs.forEach(msg => toast.error(msg));
+            errMsgs.forEach((msg) => toast.error(msg));
           } else {
             toast.error(errMsgs as string);
           }
@@ -192,13 +286,18 @@ export function JobForm() {
             Vaga cadastrada com sucesso!
           </h2>
           <p className="mb-6 max-w-md text-muted-foreground">
-            Sua vaga foi salva. Para que ela seja publicada e divulgada, por favor, realize o pagamento via PIX.
+            Sua vaga foi salva. Para que ela seja publicada e divulgada, por
+            favor, realize o pagamento via PIX.
           </p>
 
           <div className="bg-muted p-6 rounded-lg w-full max-w-sm flex flex-col items-center gap-4">
             <h3 className="font-semibold text-lg">Pagar com PIX</h3>
             {pixData.qrCodeBase64 && (
-              <img src={`data:image/png;base64,${pixData.qrCodeBase64}`} alt="QR Code PIX" className="w-48 h-48" />
+              <img
+                src={`data:image/png;base64,${pixData.qrCodeBase64}`}
+                alt="QR Code PIX"
+                className="w-48 h-48"
+              />
             )}
             <div className="w-full">
               <Label className="text-xs">Código PIX Copia e Cola</Label>
@@ -216,14 +315,21 @@ export function JobForm() {
             </div>
             {pixData.ticket_url && (
               <Button asChild variant="link" className="w-full">
-                <a href={pixData.ticket_url} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={pixData.ticket_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Ver recibo do Mercado Pago
                 </a>
               </Button>
             )}
           </div>
 
-          <Button className="mt-8 w-full max-w-sm" onClick={() => router.push("/minhas-vagas")}>
+          <Button
+            className="mt-8 w-full max-w-sm"
+            onClick={() => router.push("/minhas-vagas")}
+          >
             Ir para Minhas Vagas
           </Button>
         </CardContent>
@@ -241,7 +347,6 @@ export function JobForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-8">
-
           <div className="space-y-4">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
               <Crown className="h-5 w-5 text-accent" />
@@ -249,21 +354,27 @@ export function JobForm() {
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <Card
-                className={`cursor-pointer transition-all ${formData.plan === 'BASIC' ? 'border-primary ring-2 ring-primary/20' : ''}`}
-                onClick={() => setFormData({ ...formData, plan: 'BASIC' })}
+                className={`cursor-pointer transition-all ${formData.plan === "BASIC" ? "border-primary ring-2 ring-primary/20" : ""}`}
+                onClick={() => setFormData({ ...formData, plan: "BASIC" })}
               >
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-bold text-lg mb-2">Plano Básico - R$ 20</h4>
-                  <p className="text-sm text-muted-foreground">Publicação padrão no site e no grupo do WhatsApp.</p>
+                  <h4 className="font-bold text-lg mb-2">
+                    Plano Básico - R$ 20
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Publicação padrão no site e no grupo do WhatsApp.
+                  </p>
                 </CardContent>
               </Card>
               <Card
-                className={`cursor-pointer transition-all ${formData.plan === 'PRO' ? 'border-primary ring-2 ring-primary/20' : ''}`}
-                onClick={() => setFormData({ ...formData, plan: 'PRO' })}
+                className={`cursor-pointer transition-all ${formData.plan === "PRO" ? "border-primary ring-2 ring-primary/20" : ""}`}
+                onClick={() => setFormData({ ...formData, plan: "PRO" })}
               >
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-bold text-lg mb-2">Plano PRO - R$ 30</h4>
-                  <p className="text-sm text-muted-foreground">Destaque na página inicial e topo da lista do WhatsApp.</p>
+                  <h4 className="font-bold text-lg mb-2">Plano PRO - R$ 35</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Destaque na página inicial e topo da lista do WhatsApp.
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -280,12 +391,19 @@ export function JobForm() {
             >
               {bannerPreview ? (
                 <div className="relative w-full h-48">
-                  <Image src={bannerPreview} alt="Preview do Banner" fill className="object-contain rounded-md" />
+                  <Image
+                    src={bannerPreview}
+                    alt="Preview do Banner"
+                    fill
+                    className="object-contain rounded-md"
+                  />
                 </div>
               ) : (
                 <div className="text-center">
                   <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Clique para fazer upload da imagem (Max: 5MB)</p>
+                  <p className="text-sm text-muted-foreground">
+                    Clique para fazer upload da imagem (Max: 5MB)
+                  </p>
                 </div>
               )}
               <input
@@ -469,7 +587,7 @@ export function JobForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="benefits">Benefícios (opcional)</Label>
+              <Label htmlFor="benefits">Benefícios</Label>
               <Textarea
                 id="benefits"
                 name="benefits"
@@ -481,7 +599,7 @@ export function JobForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="applicationLink">Link para Candidatura (opcional)</Label>
+              <Label htmlFor="applicationLink">Link para Candidatura</Label>
               <Input
                 id="applicationLink"
                 name="applicationLink"
