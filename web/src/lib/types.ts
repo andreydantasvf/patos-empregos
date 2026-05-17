@@ -1,15 +1,3 @@
-export type JobArea =
-  | 'SAUDE'
-  | 'VAREJO'
-  | 'EDUCACAO'
-  | 'TECNOLOGIA'
-  | 'ADMINISTRATIVO'
-  | 'CONSTRUCAO'
-  | 'ALIMENTACAO'
-  | 'SERVICOS_GERAIS'
-  | 'INDUSTRIA'
-  | 'OUTROS';
-
 export type JobType = 'CLT' | 'PJ' | 'FREELANCER' | 'INTERNSHIP' | 'TEMPORARY';
 
 export type JobPlan = 'BASIC' | 'FEATURED';
@@ -75,7 +63,7 @@ export type JobDto = {
   company?: CompanyBasicDto;
   title: string;
   description: string;
-  area: JobArea;
+  area: string;
   type: JobType;
   salary: string | null;
   image_url: string;

@@ -40,7 +40,7 @@ export function WhatsAppBanner() {
             className="bg-white px-8 py-6 text-lg font-semibold text-whatsapp shadow-lg transition-all hover:bg-white/90 hover:shadow-xl"
           >
             <a
-              href="https://chat.whatsapp.com/seu-grupo-aqui"
+              href={process.env.NEXT_PUBLIC_WHATSAPP_URL ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
             >

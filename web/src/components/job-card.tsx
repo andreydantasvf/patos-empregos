@@ -9,6 +9,10 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import type { JobDto, JobType } from "@/lib/types";
+
+function capitalize(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
 import {
   Building2,
   ChevronRight,
@@ -25,19 +29,6 @@ interface JobCardProps {
   onRenew?: (jobId: string) => void;
   isRenewing?: boolean;
 }
-
-const AREA_LABELS: Record<string, string> = {
-  SAUDE: "Saúde",
-  VAREJO: "Varejo",
-  EDUCACAO: "Educação",
-  TECNOLOGIA: "Tecnologia",
-  ADMINISTRATIVO: "Administrativo",
-  CONSTRUCAO: "Construção",
-  ALIMENTACAO: "Alimentação",
-  SERVICOS_GERAIS: "Serviços Gerais",
-  INDUSTRIA: "Indústria",
-  OUTROS: "Outros",
-};
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -156,7 +147,7 @@ export function JobCard({
             {jobTypeLabels[job.type]}
           </Badge>
           <Badge variant="outline" className="text-xs">
-            {AREA_LABELS[job.area] ?? job.area}
+            {capitalize(job.area)}
           </Badge>
         </div>
 

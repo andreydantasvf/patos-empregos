@@ -76,6 +76,12 @@ export function Header() {
             </>
           ) : (
             <>
+              <Link
+                href="/anunciar"
+                className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+              >
+                Para Empresas
+              </Link>
               <button
                 onClick={() => openAuthModal('login')}
                 className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
@@ -169,6 +175,13 @@ export function Header() {
               </>
             ) : (
               <>
+                <Link
+                  href="/anunciar"
+                  className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Para Empresas
+                </Link>
                 <button
                   onClick={() => { openAuthModal('login'); setIsMenuOpen(false); }}
                   className="text-left text-sm font-medium text-foreground/80 transition-colors hover:text-accent"

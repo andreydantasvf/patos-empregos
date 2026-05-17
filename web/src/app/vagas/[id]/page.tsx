@@ -1,216 +1,115 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { apiFetch } from "@/lib/api";
-import { JobDto } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Briefcase,
-  Building2,
-  CheckCircle2,
-  Clock,
-  DollarSign,
-  ExternalLink,
-  Gift,
-  ArrowLeft,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { LoadingSkeleton } from "@/components/loading-skeleton";
-import { toast } from "sonner";
+import { Header } from "@/components/header";
+import type { ApiSuccessResponse, JobDto } from "@/lib/types";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { JobDetailClient } from "./job-detail-client";
 
-const AREA_LABELS: Record<string, string> = {
-  SAUDE: 'Saúde',
-  VAREJO: 'Varejo',
-  EDUCACAO: 'Educação',
-  TECNOLOGIA: 'Tecnologia',
-  ADMINISTRATIVO: 'Administrativo',
-  CONSTRUCAO: 'Construção',
-  ALIMENTACAO: 'Alimentação',
-  SERVICOS_GERAIS: 'Serviços Gerais',
-  INDUSTRIA: 'Indústria',
-  OUTROS: 'Outros',
-};
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
+const BASE_URL = "https://patosempregos.com.br";
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (days === 0) return "Hoje";
-  if (days === 1) return "Ontem";
-  if (days < 7) return `${days} dias atrás`;
-  if (days < 30)
-    return `${Math.floor(days / 7)} semana${Math.floor(days / 7) > 1 ? "s" : ""} atrás`;
-  return `${Math.floor(days / 30)} mês${Math.floor(days / 30) > 1 ? "es" : ""} atrás`;
+async function fetchJob(id: string): Promise<JobDto | null> {
+  try {
+    const res = await fetch(`${API_URL}/jobs/${id}`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return null;
+    const body: ApiSuccessResponse<JobDto> = await res.json();
+    return body.data;
+  } catch {
+    return null;
+  }
 }
 
-const jobTypeLabels: Record<string, string> = {
-  CLT: "CLT",
-  PJ: "PJ",
-  INTERNSHIP: "Estágio",
-  TEMPORARY: "Temporário",
-  FREELANCER: "Freelancer",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const job = await fetchJob(id);
+  if (!job) return { title: "Vaga não encontrada | Patos Empregos" };
 
-export default function JobDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const [job, setJob] = useState<JobDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const companyName = job.company?.name ?? "Empresa";
+  const description = job.description.slice(0, 150).replace(/\n/g, " ");
 
-  useEffect(() => {
-    const fetchJob = async () => {
-      try {
-        const res = await apiFetch<JobDto>(`/jobs/${params.id}`);
-        setJob(res.data);
-      } catch (error: any) {
-        if (error.statusCode === 404) {
-          toast.error("Vaga não encontrada ou expirada.");
-          router.push("/");
-        } else {
-          toast.error("Erro ao carregar detalhes da vaga.");
+  return {
+    title: `Vaga de ${job.title} em Patos-PB — ${companyName} | Patos Empregos`,
+    description,
+    openGraph: {
+      title: `${job.title} — ${companyName}`,
+      description,
+      images: job.image_url ? [{ url: job.image_url }] : [],
+      type: "website",
+    },
+  };
+}
+
+export default async function JobDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const job = await fetchJob(id);
+  if (!job) notFound();
+
+  const companyName = job.company?.name ?? "Empresa";
+
+  const employmentTypeMap: Record<string, string> = {
+    CLT: "FULL_TIME",
+    PJ: "CONTRACTOR",
+    INTERNSHIP: "INTERN",
+    TEMPORARY: "TEMPORARY",
+    FREELANCER: "OTHER",
+  };
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    title: job.title,
+    description: job.description,
+    hiringOrganization: {
+      "@type": "Organization",
+      name: companyName,
+      logo: job.company?.logo_url ?? undefined,
+    },
+    jobLocation: {
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Patos",
+        addressRegion: "PB",
+        addressCountry: "BR",
+      },
+    },
+    datePosted: job.published_at ?? job.createdAt,
+    validThrough: job.expires_at ?? undefined,
+    employmentType: employmentTypeMap[job.type] ?? "OTHER",
+    occupationalCategory: job.area,
+    baseSalary: job.salary
+      ? {
+          "@type": "MonetaryAmount",
+          currency: "BRL",
+          value: { "@type": "QuantitativeValue", description: job.salary },
         }
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      : undefined,
+    url: `${BASE_URL}/vagas/${job.id}`,
+  };
 
-    if (params.id) {
-      fetchJob();
-    }
-  }, [params.id, router]);
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1 container mx-auto px-4 py-8">
-          <LoadingSkeleton />
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!job) return null;
-
-  const companyName = job.company?.name ?? '—';
+  // Escape </script> to prevent tag injection when embedding JSON-LD
+  const safeJsonLd = JSON.stringify(jsonLd).replace(/<\/script>/gi, "<\\/script>");
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD schema.org data from our own API, escaped against </script> injection */}
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: safeJsonLd }}
+      />
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
-        <Button variant="ghost" asChild className="mb-6 -ml-4 text-muted-foreground">
-          <Link href="/">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar para vagas
-          </Link>
-        </Button>
-
-        <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
-          {job.image_url && (
-            <div className="w-full h-64 relative bg-muted">
-              <Image
-                src={job.image_url}
-                alt={job.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 800px"
-              />
-            </div>
-          )}
-
-          <div className="p-6 md:p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-                  {job.title}
-                </h1>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Building2 className="h-5 w-5" />
-                  <span className="text-lg">{companyName}</span>
-                </div>
-              </div>
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-3xl font-bold text-primary">
-                {companyName.charAt(0).toUpperCase()}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3 mb-8">
-              <Badge variant="secondary" className="px-3 py-1 text-sm font-medium">
-                <Briefcase className="mr-2 h-4 w-4" />
-                {jobTypeLabels[job.type] || job.type}
-              </Badge>
-              <Badge variant="outline" className="px-3 py-1 text-sm font-medium">
-                {AREA_LABELS[job.area] ?? job.area}
-              </Badge>
-              {job.salary && (
-                <Badge variant="outline" className="px-3 py-1 text-sm font-medium bg-green-50 text-green-700 border-green-200">
-                  <DollarSign className="mr-1 h-4 w-4" />
-                  {job.salary}
-                </Badge>
-              )}
-              <Badge variant="outline" className="px-3 py-1 text-sm font-medium text-muted-foreground">
-                <Clock className="mr-2 h-4 w-4" />
-                Publicado {formatDate(job.createdAt)}
-              </Badge>
-            </div>
-
-            <div className="space-y-8">
-              <section>
-                <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground mb-4">
-                  <Briefcase className="h-5 w-5 text-accent" />
-                  Descrição da vaga
-                </h2>
-                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line">
-                  {job.description}
-                </div>
-              </section>
-
-              {job.requirements && (
-                <section>
-                  <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground mb-4">
-                    <CheckCircle2 className="h-5 w-5 text-accent" />
-                    Requisitos
-                  </h2>
-                  <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line">
-                    {job.requirements}
-                  </div>
-                </section>
-              )}
-
-              {job.benefits && (
-                <section>
-                  <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground mb-4">
-                    <Gift className="h-5 w-5 text-accent" />
-                    Benefícios
-                  </h2>
-                  <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line">
-                    {job.benefits}
-                  </div>
-                </section>
-              )}
-            </div>
-
-            {job.application_link && (
-              <div className="mt-10 pt-8 border-t">
-                <Button asChild size="lg" className="w-full sm:w-auto text-base">
-                  <a href={job.application_link} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="mr-2 h-5 w-5" />
-                    Candidatar-se
-                  </a>
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
+      <JobDetailClient job={job} />
       <Footer />
     </div>
   );

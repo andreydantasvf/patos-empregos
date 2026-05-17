@@ -1,7 +1,20 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -9,8 +22,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import cargos from "@/assets/lista_cargos.json";
 import type { JobType } from "@/lib/types";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronsUpDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { useState } from "react";
 import type { JobFilters } from "./job-list";
 
 interface SearchBarProps {
@@ -36,20 +51,25 @@ const jobTypeLabels: Record<JobType, string> = {
   FREELANCER: "Freelancer",
 };
 
+function capitalize(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
 export function SearchBar({
   filters,
   onFiltersChange,
   showFilters,
   onToggleFilters,
 }: SearchBarProps) {
-  const hasActiveFilters =
-    filters.search || filters.type || filters.company;
+  const [cargoOpen, setCargoOpen] = useState(false);
+
+  const hasActiveFilters = filters.search || filters.type || filters.area;
 
   const clearFilters = () => {
     onFiltersChange({
       search: "",
       type: "",
-      company: "",
+      area: "",
     });
   };
 
@@ -111,16 +131,60 @@ export function SearchBar({
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Empresa
+                Cargo
               </label>
-              <Input
-                type="text"
-                placeholder="Nome da empresa"
-                value={filters.company}
-                onChange={(e) =>
-                  onFiltersChange({ ...filters, company: e.target.value })
-                }
-              />
+              <Popover open={cargoOpen} onOpenChange={setCargoOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={cargoOpen}
+                    className="w-full justify-between font-normal"
+                  >
+                    {filters.area
+                      ? capitalize(filters.area)
+                      : "Todos os cargos"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar cargo..." />
+                    <CommandList>
+                      <CommandEmpty>Nenhum cargo encontrado.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value=""
+                          onSelect={() => {
+                            onFiltersChange({ ...filters, area: "" });
+                            setCargoOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${!filters.area ? "opacity-100" : "opacity-0"}`}
+                          />
+                          Todos os cargos
+                        </CommandItem>
+                        {(cargos as string[]).map((cargo) => (
+                          <CommandItem
+                            key={cargo}
+                            value={cargo}
+                            onSelect={(value) => {
+                              onFiltersChange({ ...filters, area: value });
+                              setCargoOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${filters.area === cargo ? "opacity-100" : "opacity-0"}`}
+                            />
+                            {capitalize(cargo)}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 

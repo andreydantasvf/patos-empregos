@@ -8,8 +8,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -20,9 +33,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import type { JobArea, JobPlan, JobType } from "@/lib/types";
+import type { JobPlan, JobType } from "@/lib/types";
+import cargos from "@/assets/lista_cargos.json";
 import {
   Briefcase,
+  Check,
+  ChevronsUpDown,
   Crown,
   FileText,
   Image as ImageIcon,
@@ -41,22 +57,9 @@ const jobTypes: { value: JobType; label: string }[] = [
   { value: "FREELANCER", label: "Freelancer" },
 ];
 
-const jobAreas: { value: JobArea; label: string }[] = [
-  { value: "SAUDE", label: "Saúde" },
-  { value: "VAREJO", label: "Varejo" },
-  { value: "EDUCACAO", label: "Educação" },
-  { value: "TECNOLOGIA", label: "Tecnologia" },
-  { value: "ADMINISTRATIVO", label: "Administrativo" },
-  { value: "CONSTRUCAO", label: "Construção" },
-  { value: "ALIMENTACAO", label: "Alimentação" },
-  { value: "SERVICOS_GERAIS", label: "Serviços Gerais" },
-  { value: "INDUSTRIA", label: "Indústria" },
-  { value: "OUTROS", label: "Outros" },
-];
-
 interface CreateJobFormValues {
   title: string;
-  area: JobArea;
+  area: string;
   type: JobType;
   salary: string;
   description: string;
@@ -68,7 +71,7 @@ interface CreateJobFormValues {
 
 const initialFormData: CreateJobFormValues = {
   title: "",
-  area: "OUTROS",
+  area: "",
   type: "CLT",
   salary: "",
   description: "",
@@ -77,6 +80,10 @@ const initialFormData: CreateJobFormValues = {
   application_link: "",
   plan: "BASIC",
 };
+
+function capitalize(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
 
 export function JobForm() {
   const router = useRouter();
@@ -87,6 +94,7 @@ export function JobForm() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cargoOpen, setCargoOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -122,6 +130,11 @@ export function JobForm() {
 
     if (!imageFile) {
       toast.error("A imagem da vaga é obrigatória.");
+      return;
+    }
+
+    if (!formData.area) {
+      toast.error("Selecione o cargo da vaga.");
       return;
     }
 
@@ -300,22 +313,47 @@ export function JobForm() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Área *</Label>
-                <Select
-                  value={formData.area}
-                  onValueChange={(value) => handleSelectChange("area", value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {jobAreas.map(({ value, label }) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Cargo *</Label>
+                <Popover open={cargoOpen} onOpenChange={setCargoOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={cargoOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      {formData.area
+                        ? capitalize(formData.area)
+                        : "Selecione o cargo..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar cargo..." />
+                      <CommandList>
+                        <CommandEmpty>Nenhum cargo encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          {(cargos as string[]).map((cargo) => (
+                            <CommandItem
+                              key={cargo}
+                              value={cargo}
+                              onSelect={(value) => {
+                                handleSelectChange("area", value);
+                                setCargoOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${formData.area === cargo ? "opacity-100" : "opacity-0"}`}
+                              />
+                              {capitalize(cargo)}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="space-y-2">
