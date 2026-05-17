@@ -3,7 +3,7 @@ import { UnauthorizedError, ValidationError } from '@shared/errors/HttpError';
 import { parsePagination } from '@shared/utils/pagination';
 import { successResponse } from '@shared/utils/response';
 import type { NextFunction, Request, Response } from 'express';
-import type { CreateJobInput, CreateJobWithBannerInput, ListJobsQuery } from './jobs.schema';
+import type { CreateJobInput, CreateJobWithImageInput, ListJobsQuery } from './jobs.schema';
 import { jobsService } from './jobs.service';
 
 export const jobsController = {
@@ -18,11 +18,11 @@ export const jobsController = {
     }
   },
 
-  async listByUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async listByCompany(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.user) throw new UnauthorizedError();
       const pagination = parsePagination(req);
-      const { jobs, meta } = await jobsService.listByUser(req.user.sub, pagination);
+      const { jobs, meta } = await jobsService.listByCompany(req.user.sub, pagination);
       res.json(successResponse(jobs, 'Vagas listadas com sucesso', meta));
     } catch (err) {
       next(err);
@@ -42,49 +42,30 @@ export const jobsController = {
     try {
       if (!req.user) throw new UnauthorizedError();
       if (!req.file) {
-        throw new ValidationError('Banner da vaga é obrigatório', {
-          banner: ['Banner da vaga é obrigatório'],
+        throw new ValidationError('Imagem da vaga é obrigatória', {
+          image: ['Imagem da vaga é obrigatória'],
         });
       }
 
-      const { secure_url: bannerUrl } = await uploadToCloudinary(req.file.buffer);
-      const input: CreateJobWithBannerInput = { ...(req.body as CreateJobInput), bannerUrl };
+      const { secure_url: image_url } = await uploadToCloudinary(req.file.buffer);
+      const input: CreateJobWithImageInput = { ...(req.body as CreateJobInput), image_url };
       const { job, payment } = await jobsService.create(req.user.sub, input);
-      res
-        .status(201)
-        .json(
-          successResponse(
-            { job, payment },
-            'Vaga cadastrada com sucesso. Aguardando pagamento do PIX.',
-          ),
-        );
+      res.status(201).json(
+        successResponse(
+          { job, payment },
+          'Vaga cadastrada com sucesso. Aguardando confirmação do pagamento PIX.',
+        ),
+      );
     } catch (err) {
       next(err);
     }
   },
 
-  async getPaymentStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async renew(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.user) throw new UnauthorizedError();
-      const result = await jobsService.getPaymentStatus(req.params.id, req.user.sub);
-      res.json(successResponse(result, 'Status do pagamento obtido'));
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async webhookPix(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const signature = req.headers['x-signature'] as string;
-      const requestId = req.headers['x-request-id'] as string;
-      const dataId = (req.query['data.id'] as string) || req.body?.data?.id || req.body?.id;
-      const paymentId = req.body?.data?.id || req.body?.id || dataId;
-
-      console.log('Received PIX webhook:', { signature, requestId, dataId, paymentId });
-
-      await jobsService.webhookPix({ signature, requestId, dataId }, paymentId);
-
-      res.status(200).send('OK');
+      const result = await jobsService.renewJob(req.params.id, req.user.sub);
+      res.json(successResponse(result, 'Renovação iniciada. Realize o pagamento PIX para reativar.'));
     } catch (err) {
       next(err);
     }
