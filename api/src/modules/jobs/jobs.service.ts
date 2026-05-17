@@ -11,9 +11,11 @@ import type { JobDto } from './jobs.dto';
 import { jobsRepository } from './jobs.repository';
 import type { CreateJobWithImageInput, ListJobsQuery } from './jobs.schema';
 
+// Preços originais: R$39,90 (BASIC) e R$69,90 (FEATURED)
+// Promoção de lançamento: 50% de desconto
 const PLAN_PRICES: Record<string, number> = {
-  BASIC: 39.99,
-  FEATURED: 79.99,
+  BASIC: 19.9,
+  FEATURED: 34.9,
 };
 
 const PLAN_DAYS: Record<string, number> = {

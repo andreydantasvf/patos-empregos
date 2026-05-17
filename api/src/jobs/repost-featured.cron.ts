@@ -13,7 +13,8 @@ export function scheduleRepostFeatured(): void {
       if (!env.WHATSAPP_GROUP_ID) return;
 
       try {
-        const cutoff = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000); // 5 dias atrás
+        // 4d 23h — 1h de folga para evitar miss por timing do cron vs. hora de envio
+        const cutoff = new Date(Date.now() - (5 * 24 - 1) * 60 * 60 * 1000);
         const jobs = await jobsRepository.findFeaturedForRepost(cutoff);
 
         if (jobs.length === 0) return;
