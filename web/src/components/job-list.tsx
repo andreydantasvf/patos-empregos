@@ -1,59 +1,57 @@
 "use client";
 
-import type { Job, JobFilters } from "@/lib/types";
-import { useMemo, useState } from "react";
+import type { JobDto, JobType } from "@/lib/types";
+import { useEffect, useState } from "react";
 import { EmptyState } from "./empty-state";
 import { JobCard } from "./job-card";
 import { LoadingSkeleton } from "./loading-skeleton";
 import { SearchBar } from "./search-bar";
+import { apiFetch } from "@/lib/api";
 
-interface JobListProps {
-  jobs: Job[];
-  isLoading?: boolean;
+export interface JobFilters {
+  search: string;
+  type: JobType | "";
+  company: string;
 }
 
-export function JobList({ jobs, isLoading = false }: JobListProps) {
+export function JobList() {
+  const [jobs, setJobs] = useState<JobDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [filters, setFilters] = useState<JobFilters>({
     search: "",
     type: "",
-    workMode: "",
     company: "",
   });
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
-      // Search filter
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        const matchesSearch =
-          job.position.toLowerCase().includes(searchLower) ||
-          job.companyName.toLowerCase().includes(searchLower) ||
-          job.description.toLowerCase().includes(searchLower);
-        if (!matchesSearch) return false;
-      }
+  const fetchJobs = async () => {
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.search) params.append("search", filters.search);
+      if (filters.type) params.append("type", filters.type);
+      if (filters.company) params.append("company", filters.company);
+      
+      // Fixed page and limit for now, ideally handled with pagination component
+      params.append("page", "1");
+      params.append("limit", "20");
 
-      // Type filter
-      if (filters.type && job.type !== filters.type) {
-        return false;
-      }
+      const res = await apiFetch<JobDto[]>(`/jobs?${params.toString()}`);
+      setJobs(res.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      // Work mode filter
-      if (filters.workMode && job.workMode !== filters.workMode) {
-        return false;
-      }
-
-      // Company filter
-      if (filters.company) {
-        const companyLower = filters.company.toLowerCase();
-        if (!job.companyName.toLowerCase().includes(companyLower)) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [jobs, filters]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchJobs();
+    }, 500); // Debounce
+    return () => clearTimeout(timer);
+  }, [filters]);
 
   return (
     <section id="vagas" className="scroll-mt-10 py-19 md:py-14">
@@ -79,11 +77,11 @@ export function JobList({ jobs, isLoading = false }: JobListProps) {
         {!isLoading && (
           <div className="mb-6 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {filteredJobs.length === 0
+              {jobs.length === 0
                 ? "Nenhuma vaga encontrada"
-                : filteredJobs.length === 1
+                : jobs.length === 1
                   ? "1 vaga encontrada"
-                  : `${filteredJobs.length} vagas encontradas`}
+                  : `${jobs.length} vagas encontradas`}
             </p>
           </div>
         )}
@@ -94,14 +92,14 @@ export function JobList({ jobs, isLoading = false }: JobListProps) {
               <LoadingSkeleton key={i} />
             ))}
           </div>
-        ) : filteredJobs.length === 0 ? (
+        ) : jobs.length === 0 ? (
           <EmptyState
             title="Nenhuma vaga encontrada"
             description="Tente ajustar os filtros ou buscar por outros termos."
           />
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredJobs.map((job) => (
+            {jobs.map((job) => (
               <JobCard key={job.id} job={job} />
             ))}
           </div>

@@ -82,6 +82,9 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+import { AuthProvider } from "@/lib/auth-context";
+import { Toaster } from "@/components/ui/sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -92,8 +95,11 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}
       >
-        {children}
-        {process.env.NODE_ENV === "production" && <Analytics />}
+        <AuthProvider>
+          {children}
+          {process.env.NODE_ENV === "production" && <Analytics />}
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

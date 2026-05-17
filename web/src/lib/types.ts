@@ -1,46 +1,72 @@
-export type JobType = "CLT" | "PJ" | "Estágio" | "Temporário" | "Freelancer";
-export type WorkMode = "Presencial" | "Remoto" | "Híbrido";
-export type JobStatus = "PENDENTE" | "APROVADO" | "REJEITADO" | "EXPIRADO";
+export type Role = 'ADMIN' | 'ENTERPRISE';
 
-export interface Job {
+export type JobType = 'CLT' | 'PJ' | 'FREELANCER' | 'INTERNSHIP' | 'TEMPORARY';
+
+export type JobPlan = 'BASIC' | 'PRO';
+
+export type JobStatus = 'PENDING' | 'ACTIVE' | 'EXPIRED';
+
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export type ApiSuccessResponse<T> = {
+  success: true;
+  data: T;
+  message: string;
+  meta?: PaginationMeta;
+};
+
+export type ApiErrorResponse = {
+  statusCode: number;
+  message: string;
+  errors?: Record<string, string[]> | string[];
+};
+
+export type AuthUserDto = {
   id: string;
-  imgUrl?: string;
+  email: string;
+  role: Role;
+};
+
+export type LoginResponseDto = {
+  user: AuthUserDto;
+  token: string;
+  expiresIn: string;
+};
+
+export type JobDto = {
+  id: string;
+  userId: string;
+  bannerUrl: string;
+  title: string;
   companyName: string;
   responsibleName: string;
+  email: string;
   whatsapp: string;
-  position: string;
   city: string;
   type: JobType;
-  workMode: WorkMode;
-  salaryRange?: string;
+  salary: string | null;
   description: string;
   requirements: string;
-  benefits?: string;
-  applicationLink?: string;
+  benefits: string | null;
+  applicationLink: string | null;
+  plan: JobPlan;
+  amountPaid: string;
+  paidAt: string | null;
   status: JobStatus;
-  createdAt: Date;
-  updatedAt: Date;
-  publishedAt?: Date;
-}
+  expiresAt: string | null;
+  paymentId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
-export interface JobFormData {
-  companyName: string;
-  responsibleName: string;
-  whatsapp: string;
-  position: string;
-  city: string;
-  type: JobType;
-  workMode: WorkMode;
-  salaryRange?: string;
-  description: string;
-  requirements: string;
-  benefits?: string;
-  applicationLink?: string;
-}
-
-export interface JobFilters {
-  search: string;
-  type: JobType | "";
-  workMode: WorkMode | "";
-  company: string;
-}
+export type PixPaymentResponse = {
+  paymentId: string;
+  qrCode: string;
+  qrCodeBase64: string;
+  ticket_url: string;
+};

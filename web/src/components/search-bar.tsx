@@ -9,8 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { JobFilters, JobType, WorkMode } from "@/lib/types";
+import type { JobType } from "@/lib/types";
 import { Search, SlidersHorizontal, X } from "lucide-react";
+import type { JobFilters } from "./job-list";
 
 interface SearchBarProps {
   filters: JobFilters;
@@ -22,11 +23,18 @@ interface SearchBarProps {
 const jobTypes: JobType[] = [
   "CLT",
   "PJ",
-  "Estágio",
-  "Temporário",
-  "Freelancer",
+  "INTERNSHIP",
+  "TEMPORARY",
+  "FREELANCER",
 ];
-const workModes: WorkMode[] = ["Presencial", "Remoto", "Híbrido"];
+
+const jobTypeLabels: Record<JobType, string> = {
+  CLT: "CLT",
+  PJ: "PJ",
+  INTERNSHIP: "Estágio",
+  TEMPORARY: "Temporário",
+  FREELANCER: "Freelancer",
+};
 
 export function SearchBar({
   filters,
@@ -35,13 +43,12 @@ export function SearchBar({
   onToggleFilters,
 }: SearchBarProps) {
   const hasActiveFilters =
-    filters.search || filters.type || filters.workMode || filters.company;
+    filters.search || filters.type || filters.company;
 
   const clearFilters = () => {
     onFiltersChange({
       search: "",
       type: "",
-      workMode: "",
       company: "",
     });
   };
@@ -74,7 +81,7 @@ export function SearchBar({
 
       {showFilters && (
         <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Tipo da vaga
@@ -84,7 +91,7 @@ export function SearchBar({
                 onValueChange={(value) =>
                   onFiltersChange({
                     ...filters,
-                    type: value as JobType | "",
+                    type: value === "all" ? "" : (value as JobType),
                   })
                 }
               >
@@ -95,34 +102,7 @@ export function SearchBar({
                   <SelectItem value="all">Todos os tipos</SelectItem>
                   {jobTypes.map((type) => (
                     <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                Modalidade
-              </label>
-              <Select
-                value={filters.workMode}
-                onValueChange={(value) =>
-                  onFiltersChange({
-                    ...filters,
-                    workMode: value as WorkMode | "",
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas as modalidades" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as modalidades</SelectItem>
-                  {workModes.map((mode) => (
-                    <SelectItem key={mode} value={mode}>
-                      {mode}
+                      {jobTypeLabels[type]}
                     </SelectItem>
                   ))}
                 </SelectContent>

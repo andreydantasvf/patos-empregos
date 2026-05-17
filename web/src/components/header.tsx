@@ -1,14 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import PatosEmpregosLogo from "../../public/menor-no-bg-apenas-logo-patos-empregos.png";
+import { useAuth } from "@/lib/auth-context";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-white-paper/95 backdrop-blur supports-backdrop-filter:bg-white-paper/80">
@@ -37,12 +39,50 @@ export function Header() {
           >
             Ver Vagas
           </Link>
-          <Link
-            href="/#sobre"
-            className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
-          >
-            Sobre
-          </Link>
+
+          {user ? (
+            <>
+              {user.role === "ADMIN" && (
+                <Link
+                  href="/admin/vagas"
+                  className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                >
+                  Admin
+                </Link>
+              )}
+              <Link
+                href="/minhas-vagas"
+                className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+              >
+                Minhas Vagas
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={logout}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+              >
+                Entrar
+              </Link>
+              <Link
+                href="/register"
+                className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+              >
+                Cadastrar
+              </Link>
+            </>
+          )}
+
           <Button
             asChild
             className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -81,13 +121,54 @@ export function Header() {
             >
               Ver Vagas
             </Link>
-            <Link
-              href="/#sobre"
-              className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sobre
-            </Link>
+
+            {user ? (
+              <>
+                {user.role === "ADMIN" && (
+                  <Link
+                    href="/admin/vagas"
+                    className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                )}
+                <Link
+                  href="/minhas-vagas"
+                  className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Minhas Vagas
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="text-left text-sm font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Sair
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Entrar
+                </Link>
+                <Link
+                  href="/register"
+                  className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Cadastrar
+                </Link>
+              </>
+            )}
+
             <Button
               asChild
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
