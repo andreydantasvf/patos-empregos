@@ -16,14 +16,25 @@ import {
   DollarSign,
   ExternalLink,
   Gift,
-  MapPin,
-  MessageCircle,
   ArrowLeft,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
 import { toast } from "sonner";
+
+const AREA_LABELS: Record<string, string> = {
+  SAUDE: 'Saúde',
+  VAREJO: 'Varejo',
+  EDUCACAO: 'Educação',
+  TECNOLOGIA: 'Tecnologia',
+  ADMINISTRATIVO: 'Administrativo',
+  CONSTRUCAO: 'Construção',
+  ALIMENTACAO: 'Alimentação',
+  SERVICOS_GERAIS: 'Serviços Gerais',
+  INDUSTRIA: 'Indústria',
+  OUTROS: 'Outros',
+};
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -89,9 +100,7 @@ export default function JobDetailPage() {
 
   if (!job) return null;
 
-  const whatsappLink = `https://wa.me/55${job.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
-    `Olá! Vi a vaga de ${job.title} no Patos Empregos e gostaria de mais informações.`,
-  )}`;
+  const companyName = job.company?.name ?? '—';
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -105,10 +114,10 @@ export default function JobDetailPage() {
         </Button>
 
         <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
-          {job.bannerUrl && (
+          {job.image_url && (
             <div className="w-full h-64 relative bg-muted">
               <Image
-                src={job.bannerUrl}
+                src={job.image_url}
                 alt={job.title}
                 fill
                 className="object-cover"
@@ -116,7 +125,7 @@ export default function JobDetailPage() {
               />
             </div>
           )}
-          
+
           <div className="p-6 md:p-8">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
               <div>
@@ -125,11 +134,11 @@ export default function JobDetailPage() {
                 </h1>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Building2 className="h-5 w-5" />
-                  <span className="text-lg">{job.companyName}</span>
+                  <span className="text-lg">{companyName}</span>
                 </div>
               </div>
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-3xl font-bold text-primary">
-                {job.companyName.charAt(0).toUpperCase()}
+                {companyName.charAt(0).toUpperCase()}
               </div>
             </div>
 
@@ -139,8 +148,7 @@ export default function JobDetailPage() {
                 {jobTypeLabels[job.type] || job.type}
               </Badge>
               <Badge variant="outline" className="px-3 py-1 text-sm font-medium">
-                <MapPin className="mr-2 h-4 w-4" />
-                {job.city}
+                {AREA_LABELS[job.area] ?? job.area}
               </Badge>
               {job.salary && (
                 <Badge variant="outline" className="px-3 py-1 text-sm font-medium bg-green-50 text-green-700 border-green-200">
@@ -165,15 +173,17 @@ export default function JobDetailPage() {
                 </div>
               </section>
 
-              <section>
-                <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground mb-4">
-                  <CheckCircle2 className="h-5 w-5 text-accent" />
-                  Requisitos
-                </h2>
-                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line">
-                  {job.requirements}
-                </div>
-              </section>
+              {job.requirements && (
+                <section>
+                  <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground mb-4">
+                    <CheckCircle2 className="h-5 w-5 text-accent" />
+                    Requisitos
+                  </h2>
+                  <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line">
+                    {job.requirements}
+                  </div>
+                </section>
+              )}
 
               {job.benefits && (
                 <section>
@@ -188,22 +198,16 @@ export default function JobDetailPage() {
               )}
             </div>
 
-            <div className="mt-10 pt-8 border-t flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="flex-1 bg-whatsapp text-white hover:bg-whatsapp/90 text-base">
-                <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="mr-2 h-5 w-5" />
-                  Candidatar via WhatsApp
-                </a>
-              </Button>
-              {job.applicationLink && (
-                <Button asChild size="lg" variant="outline" className="flex-1 text-base">
-                  <a href={job.applicationLink} target="_blank" rel="noopener noreferrer">
+            {job.application_link && (
+              <div className="mt-10 pt-8 border-t">
+                <Button asChild size="lg" className="w-full sm:w-auto text-base">
+                  <a href={job.application_link} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="mr-2 h-5 w-5" />
-                    Link de candidatura
+                    Candidatar-se
                   </a>
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

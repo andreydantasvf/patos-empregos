@@ -42,7 +42,7 @@ export function Header() {
 
           {user ? (
             <>
-              {user.role === "ADMIN" && (
+              {user.type === "admin" && (
                 <Link
                   href="/admin/vagas"
                   className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
@@ -56,6 +56,14 @@ export function Header() {
               >
                 Minhas Vagas
               </Link>
+              {user.type === "company" && (
+                <Link
+                  href="/empresa/perfil"
+                  className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                >
+                  Perfil
+                </Link>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -124,7 +132,7 @@ export function Header() {
 
             {user ? (
               <>
-                {user.role === "ADMIN" && (
+                {user.type === "admin" && (
                   <Link
                     href="/admin/vagas"
                     className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
@@ -140,6 +148,15 @@ export function Header() {
                 >
                   Minhas Vagas
                 </Link>
+                {user.type === "company" && (
+                  <Link
+                    href="/empresa/perfil"
+                    className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Perfil
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     logout();

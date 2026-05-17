@@ -14,7 +14,7 @@ import {
   ChevronRight,
   Clock,
   DollarSign,
-  MapPin,
+  Loader2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +22,22 @@ import Link from "next/link";
 interface JobCardProps {
   job: JobDto;
   showStatus?: boolean;
+  onRenew?: (jobId: string) => void;
+  isRenewing?: boolean;
 }
+
+const AREA_LABELS: Record<string, string> = {
+  SAUDE: "Saúde",
+  VAREJO: "Varejo",
+  EDUCACAO: "Educação",
+  TECNOLOGIA: "Tecnologia",
+  ADMINISTRATIVO: "Administrativo",
+  CONSTRUCAO: "Construção",
+  ALIMENTACAO: "Alimentação",
+  SERVICOS_GERAIS: "Serviços Gerais",
+  INDUSTRIA: "Indústria",
+  OUTROS: "Outros",
+};
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -64,10 +79,20 @@ const jobTypeLabels: Record<JobType, string> = {
 };
 
 function formatExpiresAt(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('pt-BR');
+  return new Date(dateStr).toLocaleDateString("pt-BR");
 }
 
-export function JobCard({ job, showStatus = false }: JobCardProps) {
+const companyInitial = (job: JobDto) =>
+  (job.company?.name ?? job.title).charAt(0).toUpperCase();
+
+export function JobCard({
+  job,
+  showStatus = false,
+  onRenew,
+  isRenewing = false,
+}: JobCardProps) {
+  const companyName = job.company?.name ?? "—";
+
   return (
     <Card className="group relative overflow-hidden border-border bg-card transition-all duration-300">
       <CardHeader>
@@ -78,11 +103,11 @@ export function JobCard({ job, showStatus = false }: JobCardProps) {
             </h3>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Building2 className="h-4 w-4 shrink-0" />
-              <span className="line-clamp-1">{job.companyName}</span>
+              <span className="line-clamp-1">{companyName}</span>
             </div>
           </div>
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xl font-bold text-primary">
-            {job.companyName.charAt(0).toUpperCase()}
+            {companyInitial(job)}
           </div>
         </div>
       </CardHeader>
@@ -90,17 +115,25 @@ export function JobCard({ job, showStatus = false }: JobCardProps) {
       <CardContent>
         {showStatus && (
           <div className="mb-3">
-            {job.status === 'PENDING' && (
+            {job.status === "AGUARDANDO_PAGAMENTO" && (
               <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100">
                 Aguardando Pagamento
               </Badge>
             )}
-            {job.status === 'ACTIVE' && (
+            {job.status === "ATIVA" && (
               <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100">
-                Ativa{job.expiresAt ? ` — expira em ${formatExpiresAt(job.expiresAt)}` : ''}
+                Ativa
+                {job.expires_at
+                  ? ` — expira em ${formatExpiresAt(job.expires_at)}`
+                  : ""}
               </Badge>
             )}
-            {job.status === 'EXPIRED' && (
+            {job.status === "SUSPENSA" && (
+              <Badge className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100">
+                Suspensa
+              </Badge>
+            )}
+            {job.status === "EXPIRADA" && (
               <Badge className="bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-100">
                 Expirada
               </Badge>
@@ -110,8 +143,8 @@ export function JobCard({ job, showStatus = false }: JobCardProps) {
 
         <div className="relative w-full h-40 mb-3 bg-muted rounded-md overflow-hidden">
           <Image
-            src={job.bannerUrl || "/placeholder.png"}
-            alt={job.companyName}
+            src={job.image_url || "/placeholder.png"}
+            alt={companyName}
             fill
             sizes="(max-width: 768px) 100vw, 300px"
             className="object-cover"
@@ -122,13 +155,12 @@ export function JobCard({ job, showStatus = false }: JobCardProps) {
           <Badge variant="outline" className={getTypeColor(job.type)}>
             {jobTypeLabels[job.type]}
           </Badge>
+          <Badge variant="outline" className="text-xs">
+            {AREA_LABELS[job.area] ?? job.area}
+          </Badge>
         </div>
 
         <div className="space-y-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 shrink-0 text-accent" />
-            <span>{job.city}</span>
-          </div>
           {job.salary && (
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 shrink-0 text-accent" />
@@ -142,17 +174,66 @@ export function JobCard({ job, showStatus = false }: JobCardProps) {
         </div>
       </CardContent>
 
-      <CardFooter className="border-t border-border">
-        <Button
-          asChild
-          variant="ghost"
-          className="w-full justify-between text-blue-growth"
-        >
-          <Link href={`/vagas/${job.id}`}>
-            Ver detalhes
-            <ChevronRight className="h-4 w-4" />
-          </Link>
-        </Button>
+      <CardFooter className="border-t border-border flex-col items-stretch gap-2">
+        {showStatus ? (
+          <>
+            {job.status === "AGUARDANDO_PAGAMENTO" && (
+              <Button asChild className="w-full">
+                <Link href={`/pagamento/${job.id}`}>Pagar agora</Link>
+              </Button>
+            )}
+            {job.status === "ATIVA" && (
+              <Button
+                asChild
+                variant="outline"
+                className="w-full justify-between text-blue-growth"
+              >
+                <Link
+                  href={`/vagas/${job.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Ver no site
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+            {job.status === "SUSPENSA" && (
+              <div className="rounded-md border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-700">
+                <span className="font-medium">Motivo da suspensão:</span>{" "}
+                {job.suspension_reason ??
+                  "Não informado. Entre em contato com o suporte."}
+              </div>
+            )}
+            {job.status === "EXPIRADA" && (
+              <Button
+                className="w-full"
+                onClick={() => onRenew?.(job.id)}
+                disabled={isRenewing}
+              >
+                {isRenewing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  "Renovar vaga"
+                )}
+              </Button>
+            )}
+          </>
+        ) : (
+          <Button
+            asChild
+            variant="ghost"
+            className="w-full justify-between text-blue-growth"
+          >
+            <Link href={`/vagas/${job.id}`}>
+              Ver detalhes
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

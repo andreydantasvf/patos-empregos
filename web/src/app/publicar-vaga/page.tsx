@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Publicar Vaga | Patos Empregos",
     description:
-      "Publique sua vaga de emprego em Patos-PB de forma rápida e simples. Planos a partir de R$ 20.",
+      "Publique sua vaga de emprego em Patos-PB de forma rápida e simples. Planos a partir de R$ 39.",
   },
 };
 
@@ -51,7 +51,7 @@ export default function PublicarVagaPage() {
             </h1>
             <p className="mx-auto max-w-xl text-muted-foreground">
               Alcance candidatos qualificados da região de forma rápida e simples.
-              Planos a partir de R$ 20.
+              Planos a partir de R$ 39.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-4 md:gap-6">
