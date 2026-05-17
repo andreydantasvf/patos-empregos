@@ -12,7 +12,7 @@ async function main() {
     throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be set in .env');
   }
 
-  const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
+  const existing = await prisma.admin.findUnique({ where: { email: adminEmail } });
 
   if (existing) {
     console.log(`✅ Admin já existe: ${adminEmail}`);
@@ -21,13 +21,11 @@ async function main() {
 
   const hashedPassword = await bcrypt.hash(adminPassword, 12);
 
-  const admin = await prisma.user.create({
+  const admin = await prisma.admin.create({
     data: {
-      nome: 'Admin',
+      name: 'Admin',
       email: adminEmail,
-      cpf: '00000000000',
       password: hashedPassword,
-      role: 'ADMIN',
     },
   });
 

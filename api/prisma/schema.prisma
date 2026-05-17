@@ -8,9 +8,19 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  ADMIN
-  ENTERPRISE
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum JobArea {
+  SAUDE
+  VAREJO
+  EDUCACAO
+  TECNOLOGIA
+  ADMINISTRATIVO
+  CONSTRUCAO
+  ALIMENTACAO
+  SERVICOS_GERAIS
+  INDUSTRIA
+  OUTROS
 }
 
 enum JobType {
@@ -23,65 +33,106 @@ enum JobType {
 
 enum JobPlan {
   BASIC
-  PRO
-  PREMIUM
-}
-
-model User {
-  id        String   @id @default(cuid())
-  nome      String
-  email     String   @unique
-  cpf       String   @unique
-  password  String
-  role      Role     @default(ENTERPRISE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  jobs Job[]
-
-  @@index([email])
-  @@index([cpf])
-  @@map("users")
+  FEATURED
 }
 
 enum JobStatus {
+  AGUARDANDO_PAGAMENTO
+  ATIVA
+  SUSPENSA
+  EXPIRADA
+}
+
+enum PaymentStatus {
   PENDING
-  ACTIVE
+  CONFIRMED
   EXPIRED
 }
 
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  cnpj_cpf  String?
+  logo_url  String?
+  blocked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs     Job[]
+  payments Payment[]
+
+  @@index([email])
+  @@map("companies")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("admins")
+}
+
 model Job {
-  id              String    @id @default(cuid())
-  userId          String
-  bannerUrl       String
-  title           String
-  companyName     String
-  responsibleName String
-  email           String
-  whatsapp        String
-  city            String
-  type            JobType
-  salary          String?
-  description     String
-  requirements    String
-  benefits        String?
-  applicationLink String?
-  plan            JobPlan   @default(BASIC)
-  amountPaid      String
-  paidAt          DateTime?
-  status          JobStatus @default(PENDING)
-  expiresAt       DateTime?
-  paymentId       String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  companyId         String
+  title             String    @db.VarChar(100)
+  description       String    @db.Text
+  area              JobArea
+  type              JobType
+  salary            String?
+  image_url         String
+  application_link  String
+  plan              JobPlan   @default(BASIC)
+  status            JobStatus @default(AGUARDANDO_PAGAMENTO)
+  is_featured       Boolean   @default(false)
+  published_at      DateTime?
+  expires_at        DateTime?
+  whatsapp_sent_at  DateTime?
+  suspension_reason String?
+  requirements      String?   @db.Text
+  benefits          String?   @db.Text
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  company  Company   @relation(fields: [companyId], references: [id])
+  payments Payment[]
 
-  @@index([userId])
-  @@index([city])
+  @@index([companyId])
+  @@index([area])
   @@index([type])
-  @@index([companyName])
   @@index([plan])
   @@index([status])
+  @@index([is_featured])
   @@map("jobs")
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  jobId            String
+  companyId        String
+  plan             JobPlan
+  amount           Decimal       @db.Decimal(10, 2)
+  status           PaymentStatus @default(PENDING)
+  mp_payment_id    String?
+  mp_preference_id String?
+  confirmed_at     DateTime?
+  createdAt        DateTime      @default(now())
+
+  job     Job     @relation(fields: [jobId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([jobId])
+  @@index([companyId])
+  @@index([status])
+  @@index([mp_payment_id])
+  @@map("payments")
 }
