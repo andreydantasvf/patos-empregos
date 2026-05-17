@@ -31,7 +31,8 @@ export const jobsController = {
 
   async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const job = await jobsService.getById(req.params.id);
+      const userId = req.user?.sub;
+      const job = await jobsService.getById(req.params.id, userId);
       res.json(successResponse(job, 'Vaga encontrada'));
     } catch (err) {
       next(err);

@@ -63,10 +63,11 @@ export const jobsService = {
     return { jobs: jobs as JobDto[], meta: buildMeta(total, pagination.page, pagination.limit) };
   },
 
-  async getById(id: string): Promise<JobDto> {
+  async getById(id: string, userId?: string): Promise<JobDto> {
     const job = await jobsRepository.findById(id);
     if (!job) throw new NotFoundError('Vaga');
-    if (job.status !== JobStatus.ACTIVE) throw new NotFoundError('Vaga');
+    if (userId && job.userId !== userId && job.status !== JobStatus.ACTIVE)
+      throw new NotFoundError('Vaga');
     if (job.expiresAt && job.expiresAt < new Date()) throw new NotFoundError('Vaga expirada');
     return job as JobDto;
   },
