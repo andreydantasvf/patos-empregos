@@ -1,6 +1,6 @@
 import { JobPlan, JobStatus } from '@/generated/prisma/client';
 import { AppError } from '@/shared/errors';
-import { NotFoundError } from '@shared/errors/HttpError';
+import { ForbiddenError, NotFoundError } from '@shared/errors/HttpError';
 import {
   paymentProvider,
   PixPaymentResponse,
@@ -16,8 +16,8 @@ import { jobsRepository } from './jobs.repository';
 import type { CreateJobWithBannerInput, ListJobsQuery } from './jobs.schema';
 
 const PLAN_PRICES = {
-  BASIC: 20,
-  PRO: 35,
+  BASIC: 1,
+  PRO: 1,
   PREMIUM: 0, // Disabled
 };
 
@@ -40,11 +40,8 @@ export const jobsService = {
       status: JobStatus.ACTIVE,
     });
 
-    // TODO: Filter expired jobs if not handled by a cronjob, or update their status here.
-    const activeJobs = jobs.filter((job) => !job.expiresAt || job.expiresAt > new Date());
-
     return {
-      jobs: activeJobs as JobDto[],
+      jobs: jobs as JobDto[],
       meta: buildMeta(total, pagination.page, pagination.limit),
     };
   },
@@ -136,6 +133,16 @@ export const jobsService = {
     });
 
     logger.info({ jobId: job.id }, '[Jobs] Vaga ativada com sucesso pelo webhook');
+  },
+
+  async getPaymentStatus(
+    jobId: string,
+    requestingUserId: string,
+  ): Promise<{ status: string; paidAt: Date | null; expiresAt: Date | null }> {
+    const job = await jobsRepository.findById(jobId);
+    if (!job) throw new NotFoundError('Vaga');
+    if (job.userId !== requestingUserId) throw new ForbiddenError();
+    return { status: job.status, paidAt: job.paidAt, expiresAt: job.expiresAt };
   },
 
   async webhookPix(data: WebhookValidationParams, paymentId: string): Promise<void> {

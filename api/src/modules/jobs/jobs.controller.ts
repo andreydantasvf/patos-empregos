@@ -63,12 +63,24 @@ export const jobsController = {
     }
   },
 
+  async getPaymentStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) throw new UnauthorizedError();
+      const result = await jobsService.getPaymentStatus(req.params.id, req.user.sub);
+      res.json(successResponse(result, 'Status do pagamento obtido'));
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async webhookPix(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const signature = req.headers['x-signature'] as string;
       const requestId = req.headers['x-request-id'] as string;
       const dataId = (req.query['data.id'] as string) || req.body?.data?.id || req.body?.id;
       const paymentId = req.body?.data?.id || req.body?.id || dataId;
+
+      console.log('Received PIX webhook:', { signature, requestId, dataId, paymentId });
 
       await jobsService.webhookPix({ signature, requestId, dataId }, paymentId);
 

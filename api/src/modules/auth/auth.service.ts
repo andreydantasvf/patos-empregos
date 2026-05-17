@@ -1,7 +1,7 @@
 import { Role } from '@/generated/prisma/enums';
 import { env } from '@config/env';
 import { usersRepository } from '@modules/users/users.repository';
-import { UnauthorizedError } from '@shared/errors/HttpError';
+import { ConflictError, UnauthorizedError } from '@shared/errors/HttpError';
 import { jwtProvider } from '@shared/providers/jwt.provider';
 import { logger } from '@shared/utils/logger';
 import bcrypt from 'bcryptjs';
@@ -32,8 +32,13 @@ export const authService = {
   },
 
   async register(input: RegisterInput): Promise<LoginResponseDto> {
+    const alreadyExists = await usersRepository.exists(input.email);
+    if (alreadyExists) throw new ConflictError('E-mail já cadastrado');
+
+    const hashedPassword = await bcrypt.hash(input.password, 12);
     const payload = {
       ...input,
+      password: hashedPassword,
       role: Role.ENTERPRISE,
     };
     const user = await usersRepository.create(payload);

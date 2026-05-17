@@ -31,7 +31,14 @@ function buildWhereClause(filters: JobFilters): Prisma.JobWhereInput {
   }
 
   if (filters.status) {
-    where.status = filters.status;
+    if (filters.status === JobStatus.ACTIVE) {
+      where.AND = [
+        { status: JobStatus.ACTIVE },
+        { OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+      ];
+    } else {
+      where.status = filters.status;
+    }
   }
 
   return where;

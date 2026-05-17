@@ -11,6 +11,8 @@ router.get('/', jobsController.list);
 
 router.get('/me', authMiddleware, jobsController.listByUser);
 
+router.get('/:id/payment-status', authMiddleware, jobsController.getPaymentStatus);
+
 router.get('/:id', jobsController.getById);
 
 router.post('/', authMiddleware, upload.single('banner'), validateBody(createJobSchema), jobsController.create);
