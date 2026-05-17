@@ -1,9 +1,19 @@
 import z from 'zod';
 
-export const updateStatusSchema = z.object({
-  status: z.enum(['PENDING', 'ACTIVE', 'EXPIRED'], {
-    errorMap: () => ({ message: 'Status deve ser PENDING, ACTIVE ou EXPIRED' }),
+export const updateJobStatusSchema = z.discriminatedUnion('status', [
+  z.object({
+    status: z.literal('ATIVA'),
   }),
-});
+  z.object({
+    status: z.literal('SUSPENSA'),
+    motivo: z
+      .string({ required_error: 'Motivo da suspensão é obrigatório' })
+      .min(5, 'Motivo deve ter no mínimo 5 caracteres')
+      .max(500, 'Motivo deve ter no máximo 500 caracteres'),
+  }),
+  z.object({
+    status: z.literal('EXPIRADA'),
+  }),
+]);
 
-export type UpdateStatusDto = z.infer<typeof updateStatusSchema>;
+export type UpdateJobStatusDto = z.infer<typeof updateJobStatusSchema>;
