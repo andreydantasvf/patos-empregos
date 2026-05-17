@@ -27,14 +27,15 @@ import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "E-mail inválido." }).toLowerCase().trim(),
-  password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres." }),
+  password: z.string().min(8, { message: "A senha deve ter pelo menos 8 caracteres." }),
 });
 
 const registerSchema = z.object({
-  nome: z.string().min(2, { message: "Nome deve ter pelo menos 2 caracteres." }),
+  name: z.string().min(2, { message: "Nome deve ter pelo menos 2 caracteres." }),
   email: z.string().email({ message: "E-mail inválido." }).toLowerCase().trim(),
-  cpf: z.string().length(11, { message: "CPF deve ter exatamente 11 dígitos." }),
-  password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres." }),
+  password: z.string().min(8, { message: "A senha deve ter pelo menos 8 caracteres." }),
+  phone: z.string().trim().optional(),
+  cnpj_cpf: z.string().trim().optional(),
 });
 
 interface AuthModalProps {
@@ -90,7 +91,7 @@ function LoginForm({ onSuccess }: { onSuccess: AuthModalProps["onSuccess"] }) {
             <FormItem>
               <FormLabel>Senha</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="******" {...field} />
+                <Input type="password" placeholder="********" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -108,20 +109,23 @@ function RegisterForm({ onSuccess }: { onSuccess: AuthModalProps["onSuccess"] })
   const [isLoading, setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { nome: "", email: "", cpf: "", password: "" },
+    defaultValues: { name: "", email: "", password: "", phone: "", cnpj_cpf: "" },
   });
 
   async function onSubmit(values: z.infer<typeof registerSchema>) {
     try {
       setIsLoading(true);
-      const cleanedCpf = values.cpf.replace(/\D/g, "");
-      if (cleanedCpf.length !== 11) {
-        toast.error("CPF inválido.");
-        return;
-      }
+      const payload: Record<string, string> = {
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      };
+      if (values.phone) payload.phone = values.phone;
+      if (values.cnpj_cpf) payload.cnpj_cpf = values.cnpj_cpf;
+
       const res = await apiFetch<LoginResponseDto>("/auth/register", {
         method: "POST",
-        body: JSON.stringify({ ...values, cpf: cleanedCpf }),
+        body: JSON.stringify(payload),
       });
       toast.success("Cadastro realizado com sucesso!");
       onSuccess(res.data.user, res.data.token);
@@ -147,12 +151,12 @@ function RegisterForm({ onSuccess }: { onSuccess: AuthModalProps["onSuccess"] })
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
         <FormField
           control={form.control}
-          name="nome"
+          name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome completo / Empresa</FormLabel>
+              <FormLabel>Nome da empresa / Responsável</FormLabel>
               <FormControl>
-                <Input placeholder="Seu nome" {...field} />
+                <Input placeholder="Ex: TechPatos Soluções" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -165,20 +169,7 @@ function RegisterForm({ onSuccess }: { onSuccess: AuthModalProps["onSuccess"] })
             <FormItem>
               <FormLabel>E-mail</FormLabel>
               <FormControl>
-                <Input placeholder="seu@email.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="cpf"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>CPF (apenas números)</FormLabel>
-              <FormControl>
-                <Input placeholder="00000000000" maxLength={11} {...field} />
+                <Input placeholder="contato@empresa.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -191,7 +182,33 @@ function RegisterForm({ onSuccess }: { onSuccess: AuthModalProps["onSuccess"] })
             <FormItem>
               <FormLabel>Senha</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="******" {...field} />
+                <Input type="password" placeholder="********" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Telefone (opcional)</FormLabel>
+              <FormControl>
+                <Input placeholder="(83) 99999-9999" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="cnpj_cpf"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>CNPJ / CPF (opcional)</FormLabel>
+              <FormControl>
+                <Input placeholder="00.000.000/0001-00" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
