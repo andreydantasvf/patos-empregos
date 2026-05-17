@@ -18,29 +18,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { JobType, JobPlan } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
-import { toast } from "sonner";
+import type { JobPlan, JobType } from "@/lib/types";
 import {
   Briefcase,
   Building2,
   CheckCircle2,
-  CheckSquare,
-  DollarSign,
-  FileText,
-  Gift,
-  Link2,
-  Loader2,
-  MapPin,
-  Phone,
-  User,
-  Image as ImageIcon,
-  Mail,
   Crown,
+  FileText,
+  Image as ImageIcon,
+  Loader2
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState, useRef } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 const jobTypes: JobType[] = [
   "CLT",
@@ -96,7 +88,7 @@ export function JobForm() {
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [pixData, setPixData] = useState<any>(null);
@@ -159,7 +151,7 @@ export function JobForm() {
       payload.append("description", formData.description);
       payload.append("requirements", formData.requirements);
       payload.append("plan", formData.plan);
-      
+
       if (formData.salary) payload.append("salary", formData.salary);
       if (formData.benefits) payload.append("benefits", formData.benefits);
       if (formData.applicationLink) payload.append("applicationLink", formData.applicationLink);
@@ -202,7 +194,7 @@ export function JobForm() {
           <p className="mb-6 max-w-md text-muted-foreground">
             Sua vaga foi salva. Para que ela seja publicada e divulgada, por favor, realize o pagamento via PIX.
           </p>
-          
+
           <div className="bg-muted p-6 rounded-lg w-full max-w-sm flex flex-col items-center gap-4">
             <h3 className="font-semibold text-lg">Pagar com PIX</h3>
             {pixData.qrCodeBase64 && (
@@ -211,8 +203,8 @@ export function JobForm() {
             <div className="w-full">
               <Label className="text-xs">Código PIX Copia e Cola</Label>
               <Input value={pixData.qrCode} readOnly className="text-xs mt-1" />
-              <Button 
-                className="w-full mt-2" 
+              <Button
+                className="w-full mt-2"
                 variant="outline"
                 onClick={() => {
                   navigator.clipboard.writeText(pixData.qrCode);
@@ -249,28 +241,28 @@ export function JobForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-8">
-          
+
           <div className="space-y-4">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
               <Crown className="h-5 w-5 text-accent" />
               Plano da Vaga
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Card 
+              <Card
                 className={`cursor-pointer transition-all ${formData.plan === 'BASIC' ? 'border-primary ring-2 ring-primary/20' : ''}`}
                 onClick={() => setFormData({ ...formData, plan: 'BASIC' })}
               >
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-bold text-lg mb-2">Plano Básico</h4>
+                  <h4 className="font-bold text-lg mb-2">Plano Básico - R$ 20</h4>
                   <p className="text-sm text-muted-foreground">Publicação padrão no site e no grupo do WhatsApp.</p>
                 </CardContent>
               </Card>
-              <Card 
+              <Card
                 className={`cursor-pointer transition-all ${formData.plan === 'PRO' ? 'border-primary ring-2 ring-primary/20' : ''}`}
                 onClick={() => setFormData({ ...formData, plan: 'PRO' })}
               >
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-bold text-lg mb-2">Plano PRO</h4>
+                  <h4 className="font-bold text-lg mb-2">Plano PRO - R$ 30</h4>
                   <p className="text-sm text-muted-foreground">Destaque na página inicial e topo da lista do WhatsApp.</p>
                 </CardContent>
               </Card>
@@ -282,7 +274,7 @@ export function JobForm() {
               <ImageIcon className="h-5 w-5 text-accent" />
               Banner da Vaga *
             </h3>
-            <div 
+            <div
               className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
               onClick={() => fileInputRef.current?.click()}
             >
@@ -296,10 +288,10 @@ export function JobForm() {
                   <p className="text-sm text-muted-foreground">Clique para fazer upload da imagem (Max: 5MB)</p>
                 </div>
               )}
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
                 accept="image/*"
                 onChange={handleFileChange}
               />

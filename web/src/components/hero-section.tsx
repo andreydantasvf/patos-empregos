@@ -25,10 +25,11 @@ export function HeroSection() {
               <span className="relative z-10 text-accent">Patos-PB</span>
               <span className="absolute bottom-1 left-0 z-0 h-3 w-full bg-primary/30" />
             </span>
+            {" "}e região.
           </h1>
 
           <p className="mx-auto mb-8 max-w-2xl text-pretty text-lg text-muted-foreground md:text-xl">
-            As vagas da cidade reunidas em um só lugar. Conectamos candidatos e
+            As vagas do sertão reunidas em um só lugar. Conectamos candidatos e
             empresas de forma rápida, simples e gratuita.
           </p>
 

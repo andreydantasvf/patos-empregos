@@ -1,12 +1,12 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
 import type { JobDto, JobType } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { EmptyState } from "./empty-state";
 import { JobCard } from "./job-card";
 import { LoadingSkeleton } from "./loading-skeleton";
 import { SearchBar } from "./search-bar";
-import { apiFetch } from "@/lib/api";
 
 export interface JobFilters {
   search: string;
@@ -17,7 +17,7 @@ export interface JobFilters {
 export function JobList() {
   const [jobs, setJobs] = useState<JobDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [filters, setFilters] = useState<JobFilters>({
     search: "",
     type: "",
@@ -32,7 +32,7 @@ export function JobList() {
       if (filters.search) params.append("search", filters.search);
       if (filters.type) params.append("type", filters.type);
       if (filters.company) params.append("company", filters.company);
-      
+
       // Fixed page and limit for now, ideally handled with pagination component
       params.append("page", "1");
       params.append("limit", "20");
@@ -73,18 +73,6 @@ export function JobList() {
             onToggleFilters={() => setShowFilters(!showFilters)}
           />
         </div>
-
-        {!isLoading && (
-          <div className="mb-6 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {jobs.length === 0
-                ? "Nenhuma vaga encontrada"
-                : jobs.length === 1
-                  ? "1 vaga encontrada"
-                  : `${jobs.length} vagas encontradas`}
-            </p>
-          </div>
-        )}
 
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

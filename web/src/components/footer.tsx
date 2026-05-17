@@ -76,7 +76,7 @@ export function Footer() {
                 className="flex items-center gap-2 text-sm text-secondary-foreground/80 transition-colors hover:text-primary"
               >
                 <Phone className="h-4 w-4" />
-                <span>(83) 99999-9999</span>
+                <span>(83) 92154-2086</span>
               </a>
             </div>
           </div>
