@@ -21,6 +21,7 @@ import Link from "next/link";
 
 interface JobCardProps {
   job: JobDto;
+  showStatus?: boolean;
 }
 
 function formatDate(dateStr: string): string {
@@ -62,7 +63,11 @@ const jobTypeLabels: Record<JobType, string> = {
   FREELANCER: "Freelancer",
 };
 
-export function JobCard({ job }: JobCardProps) {
+function formatExpiresAt(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('pt-BR');
+}
+
+export function JobCard({ job, showStatus = false }: JobCardProps) {
   return (
     <Card className="group relative overflow-hidden border-border bg-card transition-all duration-300">
       <CardHeader>
@@ -83,6 +88,26 @@ export function JobCard({ job }: JobCardProps) {
       </CardHeader>
 
       <CardContent>
+        {showStatus && (
+          <div className="mb-3">
+            {job.status === 'PENDING' && (
+              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100">
+                Aguardando Pagamento
+              </Badge>
+            )}
+            {job.status === 'ACTIVE' && (
+              <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100">
+                Ativa{job.expiresAt ? ` — expira em ${formatExpiresAt(job.expiresAt)}` : ''}
+              </Badge>
+            )}
+            {job.status === 'EXPIRED' && (
+              <Badge className="bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-100">
+                Expirada
+              </Badge>
+            )}
+          </div>
+        )}
+
         <div className="relative w-full h-40 mb-3 bg-muted rounded-md overflow-hidden">
           <Image
             src={job.bannerUrl || "/placeholder.png"}

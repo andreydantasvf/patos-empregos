@@ -8,11 +8,11 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Publicar Vaga | Patos Empregos",
   description:
-    "Publique sua vaga de emprego em Patos-PB de forma rápida e gratuita. Alcance candidatos da região em menos de 2 minutos.",
+    "Publique sua vaga de emprego em Patos-PB de forma rápida e simples. Alcance candidatos da região em menos de 2 minutos.",
   openGraph: {
     title: "Publicar Vaga | Patos Empregos",
     description:
-      "Publique sua vaga de emprego em Patos-PB de forma rápida e gratuita.",
+      "Publique sua vaga de emprego em Patos-PB de forma rápida e simples. Planos a partir de R$ 20.",
   },
 };
 
@@ -22,11 +22,11 @@ const benefits = [
     text: "Cadastro em menos de 2 minutos",
   },
   {
-    icon: CheckCircle,
-    text: "Aprovação em até 24 horas",
+    icon: Zap,
+    text: "Ativação automática após pagamento PIX",
   },
   {
-    icon: Zap,
+    icon: CheckCircle,
     text: "Divulgação em grupos de WhatsApp",
   },
 ];
@@ -50,8 +50,8 @@ export default function PublicarVagaPage() {
               Publique sua vaga em Patos-PB
             </h1>
             <p className="mx-auto max-w-xl text-muted-foreground">
-              Alcance candidatos qualificados da região de forma rápida, simples
-              e gratuita.
+              Alcance candidatos qualificados da região de forma rápida e simples.
+              Planos a partir de R$ 20.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-4 md:gap-6">

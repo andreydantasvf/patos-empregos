@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AuthUserDto } from './types';
 import { useRouter } from 'next/navigation';
+import { AuthModal } from '@/components/auth-modal';
 
 interface AuthContextType {
   user: AuthUserDto | null;
@@ -10,6 +11,10 @@ interface AuthContextType {
   login: (user: AuthUserDto, token: string) => void;
   logout: () => void;
   isLoading: boolean;
+  isAuthModalOpen: boolean;
+  authModalDefaultTab: 'login' | 'register';
+  openAuthModal: (tab?: 'login' | 'register') => void;
+  closeAuthModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +23,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUserDto | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalDefaultTab, setAuthModalDefaultTab] = useState<'login' | 'register'>('login');
   const router = useRouter();
 
   useEffect(() => {
@@ -43,12 +50,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('user');
     setToken(null);
     setUser(null);
-    router.push('/login');
+    router.push('/');
+  };
+
+  const openAuthModal = (tab: 'login' | 'register' = 'login') => {
+    setAuthModalDefaultTab(tab);
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => setIsAuthModalOpen(false);
+
+  const handleAuthSuccess = (newUser: AuthUserDto, newToken: string) => {
+    login(newUser, newToken);
+    closeAuthModal();
+    if (newUser.role === 'ADMIN') {
+      router.push('/admin/vagas');
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        isLoading,
+        isAuthModalOpen,
+        authModalDefaultTab,
+        openAuthModal,
+        closeAuthModal,
+      }}
+    >
       {children}
+      <AuthModal
+        open={isAuthModalOpen}
+        onOpenChange={setIsAuthModalOpen}
+        defaultTab={authModalDefaultTab}
+        onSuccess={handleAuthSuccess}
+      />
     </AuthContext.Provider>
   );
 }

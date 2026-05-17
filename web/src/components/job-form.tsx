@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import type { JobPlan, JobType } from "@/lib/types";
 import {
   Briefcase,
@@ -31,7 +32,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const jobTypes: JobType[] = [
@@ -84,6 +85,8 @@ const initialFormData: CreateJobFormValues = {
 
 export function JobForm() {
   const router = useRouter();
+  const { user, isLoading: authLoading, openAuthModal } = useAuth();
+
   const [formData, setFormData] = useState<CreateJobFormValues>(initialFormData);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
@@ -92,6 +95,45 @@ export function JobForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [pixData, setPixData] = useState<any>(null);
+  const [createdJobId, setCreatedJobId] = useState<string | null>(null);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+
+  // Auth guard: open modal if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      openAuthModal('login');
+    }
+  }, [authLoading, user, openAuthModal]);
+
+  // Payment status polling
+  useEffect(() => {
+    if (!isSuccess || !createdJobId || paymentConfirmed) return;
+
+    const POLL_INTERVAL = 5000;
+    const MAX_DURATION = 10 * 60 * 1000;
+    const startTime = Date.now();
+
+    const intervalId = setInterval(async () => {
+      if (Date.now() - startTime > MAX_DURATION) {
+        clearInterval(intervalId);
+        return;
+      }
+      try {
+        const res = await apiFetch<{ status: string; paidAt: string | null; expiresAt: string | null }>(
+          `/jobs/${createdJobId}/payment-status`,
+        );
+        if (res.data.status === 'ACTIVE') {
+          setPaymentConfirmed(true);
+          clearInterval(intervalId);
+          toast.success("Pagamento confirmado! Sua vaga está ativa.");
+        }
+      } catch {
+        // silent — keep polling
+      }
+    }, POLL_INTERVAL);
+
+    return () => clearInterval(intervalId);
+  }, [isSuccess, createdJobId, paymentConfirmed]);
 
   const formatWhatsApp = (value: string) => {
     const numbers = value.replace(/\D/g, "");
@@ -162,6 +204,7 @@ export function JobForm() {
       });
 
       setPixData(res.data.payment);
+      setCreatedJobId(res.data.job.id);
       setIsSuccess(true);
       toast.success("Vaga criada com sucesso! Realize o pagamento para ativá-la.");
     } catch (error: any) {
@@ -181,6 +224,52 @@ export function JobForm() {
     }
   };
 
+  // Auth loading state
+  if (authLoading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Not authenticated fallback
+  if (!user) {
+    return (
+      <Card className="mx-auto max-w-2xl text-center">
+        <CardContent className="py-12">
+          <p className="text-muted-foreground mb-4">
+            Você precisa estar logado para publicar uma vaga.
+          </p>
+          <Button onClick={() => openAuthModal('login')}>Entrar / Cadastrar</Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Payment confirmed screen
+  if (isSuccess && paymentConfirmed) {
+    return (
+      <Card className="mx-auto max-w-2xl">
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+            <CheckCircle2 className="h-10 w-10 text-green-600" />
+          </div>
+          <h2 className="mb-2 text-2xl font-bold text-foreground">
+            Vaga ativada com sucesso!
+          </h2>
+          <p className="mb-6 max-w-md text-muted-foreground">
+            Seu pagamento foi confirmado e a vaga já está publicada no portal.
+          </p>
+          <Button className="w-full max-w-sm" onClick={() => router.push("/minhas-vagas")}>
+            Ver Minhas Vagas
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // QR code waiting screen
   if (isSuccess && pixData) {
     return (
       <Card className="mx-auto max-w-2xl">
@@ -223,7 +312,12 @@ export function JobForm() {
             )}
           </div>
 
-          <Button className="mt-8 w-full max-w-sm" onClick={() => router.push("/minhas-vagas")}>
+          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Aguardando confirmação do pagamento...
+          </p>
+
+          <Button className="mt-4 w-full max-w-sm" variant="ghost" onClick={() => router.push("/minhas-vagas")}>
             Ir para Minhas Vagas
           </Button>
         </CardContent>
