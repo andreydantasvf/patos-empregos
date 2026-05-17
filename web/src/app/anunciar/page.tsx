@@ -12,6 +12,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -19,6 +20,11 @@ export const metadata: Metadata = {
   description:
     "Publique sua vaga de emprego em Patos-PB e alcance candidatos locais. Divulgação no site e no grupo de WhatsApp. Planos a partir de R$39.",
 };
+
+const PROMO_BASIC = "R$19,90";
+const PROMO_FEATURED = "R$34,90";
+const ORIGINAL_BASIC = "R$39,90";
+const ORIGINAL_FEATURED = "R$69,90";
 
 const steps = [
   {
@@ -103,10 +109,19 @@ export default function AnunciarPage() {
               </p>
             </div>
             <div className="grid gap-8 md:grid-cols-3">
-              {steps.map((step) => (
+              {steps.map((step, i) => (
                 <div key={step.number} className="text-center">
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                    <step.icon className="h-8 w-8 text-primary" />
+                    {i === 2 ? (
+                      <Image
+                        src="/whatsapp-svgrepo-com.svg"
+                        alt="WhatsApp"
+                        width={36}
+                        height={36}
+                      />
+                    ) : (
+                      <step.icon className="h-8 w-8 text-primary" />
+                    )}
                   </div>
                   <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-sm font-bold text-white">
                     {step.number}
@@ -141,9 +156,17 @@ export default function AnunciarPage() {
                   <h3 className="mb-1 text-xl font-bold text-secondary">
                     Básico
                   </h3>
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground line-through">
+                      {ORIGINAL_BASIC}
+                    </span>
+                    <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100 text-xs">
+                      50% OFF
+                    </Badge>
+                  </div>
                   <div className="mb-4 flex items-end gap-1">
                     <span className="text-4xl font-bold text-secondary">
-                      R$39
+                      {PROMO_BASIC}
                     </span>
                     <span className="mb-1 text-muted-foreground">/vaga</span>
                   </div>
@@ -173,9 +196,17 @@ export default function AnunciarPage() {
                   <h3 className="mb-1 text-xl font-bold text-secondary">
                     Destaque
                   </h3>
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground line-through">
+                      {ORIGINAL_FEATURED}
+                    </span>
+                    <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100 text-xs">
+                      50% OFF
+                    </Badge>
+                  </div>
                   <div className="mb-4 flex items-end gap-1">
                     <span className="text-4xl font-bold text-secondary">
-                      R$79
+                      {PROMO_FEATURED}
                     </span>
                     <span className="mb-1 text-muted-foreground">/vaga</span>
                   </div>

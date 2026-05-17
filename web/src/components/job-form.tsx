@@ -228,9 +228,12 @@ export function JobForm() {
                 onClick={() => setFormData({ ...formData, plan: "BASIC" })}
               >
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-bold text-lg mb-1">
-                    Plano Básico — R$ 39
-                  </h4>
+                  <h4 className="font-bold text-lg mb-1">Plano Básico</h4>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <span className="text-sm text-muted-foreground line-through">R$39,90</span>
+                    <span className="text-xs font-semibold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">50% OFF</span>
+                  </div>
+                  <p className="text-xl font-bold text-secondary mb-1">R$19,90</p>
                   <p className="text-sm text-muted-foreground">
                     Publicação por 7 dias no site e no grupo do WhatsApp.
                   </p>
@@ -241,9 +244,12 @@ export function JobForm() {
                 onClick={() => setFormData({ ...formData, plan: "FEATURED" })}
               >
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-bold text-lg mb-1">
-                    Plano Destaque — R$ 79
-                  </h4>
+                  <h4 className="font-bold text-lg mb-1">Plano Destaque</h4>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <span className="text-sm text-muted-foreground line-through">R$69,90</span>
+                    <span className="text-xs font-semibold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">50% OFF</span>
+                  </div>
+                  <p className="text-xl font-bold text-secondary mb-1">R$34,90</p>
                   <p className="text-sm text-muted-foreground">
                     15 dias + destaque no topo + repost automático a cada 5
                     dias.
