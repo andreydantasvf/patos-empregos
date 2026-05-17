@@ -20,11 +20,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { hasSavedJobDraft } from "@/lib/job-draft";
 import { LoginResponseDto } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeClosed } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -42,6 +44,7 @@ const formSchema = z.object({
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPromptOpen, setIsPromptOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -84,6 +87,10 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   }
+
+  const handlePasswordOpen = () => {
+    setPasswordOpen(!passwordOpen);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -141,7 +148,25 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Senha</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} />
+                      <InputGroup>
+                        <InputGroupInput
+                          type={passwordOpen ? "text" : "password"}
+                          placeholder="******"
+                          {...field}
+                        />
+
+                        {passwordOpen ? (
+                          <EyeClosed
+                            onClick={handlePasswordOpen}
+                            className="mr-2 cursor-pointer"
+                          />
+                        ) : (
+                          <Eye
+                            onClick={handlePasswordOpen}
+                            className="mr-2 cursor-pointer"
+                          />
+                        )}
+                      </InputGroup>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
