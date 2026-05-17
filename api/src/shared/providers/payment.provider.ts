@@ -18,10 +18,10 @@ export interface PaymentRequest {
 }
 
 export interface PixPaymentResponse {
-  paymentId: string;
+  preferenceId: string;
   qrCode: string;
   qrCodeBase64: string;
-  ticket_url: string;
+  ticketUrl: string;
 }
 
 export interface PaymentDetails {
@@ -228,10 +228,10 @@ export class MercadoPagoProvider implements IPaymentProvider {
       }
 
       return {
-        paymentId: String(response.id || ''),
+        preferenceId: String(response.id || ''),
         qrCode: response.transactions!.payments!.at(0)!.payment_method!.qr_code || '',
         qrCodeBase64: response.transactions!.payments!.at(0)!.payment_method!.qr_code_base64 || '',
-        ticket_url: response.transactions!.payments!.at(0)!.payment_method!.ticket_url || '',
+        ticketUrl: response.transactions!.payments!.at(0)!.payment_method!.ticket_url || '',
       };
     } catch (error) {
       const status = getMercadoPagoErrorStatus(error);
