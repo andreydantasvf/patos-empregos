@@ -1,4 +1,4 @@
-import { JobArea, JobStatus, JobType, Prisma } from '@/generated/prisma/client';
+import { JobStatus, JobType, Prisma } from '@/generated/prisma/client';
 import { prisma } from '@config/prisma';
 import type { PaginationParams } from '@shared/utils/pagination';
 import type { CreateJobDto, JobFilters } from './jobs.dto';
@@ -17,7 +17,7 @@ function buildWhereClause(filters: JobFilters): Prisma.JobWhereInput {
   }
 
   if (filters.area) {
-    where.area = filters.area as JobArea;
+    where.area = { contains: filters.area, mode: 'insensitive' };
   }
 
   if (filters.type) {
@@ -28,6 +28,7 @@ function buildWhereClause(filters: JobFilters): Prisma.JobWhereInput {
     where.OR = [
       { title: { contains: filters.search, mode: 'insensitive' } },
       { description: { contains: filters.search, mode: 'insensitive' } },
+      { area: { contains: filters.search, mode: 'insensitive' } },
       { company: { name: { contains: filters.search, mode: 'insensitive' } } },
     ];
   }

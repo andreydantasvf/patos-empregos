@@ -1,4 +1,4 @@
-import type { JobArea, JobPlan, JobStatus, JobType } from '@/generated/prisma/enums';
+import type { JobPlan, JobStatus, JobType } from '@/generated/prisma/enums';
 
 export interface CompanyBasicDto {
   id: string;
@@ -12,7 +12,7 @@ export interface JobDto {
   company?: CompanyBasicDto;
   title: string;
   description: string;
-  area: JobArea;
+  area: string;
   type: JobType;
   salary: string | null;
   image_url: string;
@@ -34,7 +34,7 @@ export interface CreateJobDto {
   companyId: string;
   title: string;
   description: string;
-  area: JobArea;
+  area: string;
   type: JobType;
   salary?: string | null;
   image_url: string;
@@ -46,7 +46,7 @@ export interface CreateJobDto {
 
 export interface JobFilters {
   companyId?: string;
-  area?: JobArea;
+  area?: string;
   type?: JobType;
   search?: string;
   status?: JobStatus;

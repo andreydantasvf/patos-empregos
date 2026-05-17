@@ -1,18 +1,5 @@
 import { z } from 'zod';
 
-const JOB_AREAS = [
-  'SAUDE',
-  'VAREJO',
-  'EDUCACAO',
-  'TECNOLOGIA',
-  'ADMINISTRATIVO',
-  'CONSTRUCAO',
-  'ALIMENTACAO',
-  'SERVICOS_GERAIS',
-  'INDUSTRIA',
-  'OUTROS',
-] as const;
-
 const JOB_TYPES = ['CLT', 'PJ', 'FREELANCER', 'INTERNSHIP', 'TEMPORARY'] as const;
 
 const applicationLinkSchema = z
@@ -35,10 +22,12 @@ export const createJobSchema = z.object({
     .max(100, 'Título deve ter no máximo 100 caracteres')
     .trim(),
 
-  area: z.enum(JOB_AREAS, {
-    required_error: 'Área é obrigatória',
-    invalid_type_error: 'Área inválida',
-  }),
+  area: z
+    .string({ required_error: 'Cargo é obrigatório' })
+    .min(2, 'Mínimo 2 caracteres')
+    .max(100, 'Máximo 100 caracteres')
+    .trim()
+    .transform((s) => s.toLowerCase()),
 
   type: z.enum(JOB_TYPES, {
     required_error: 'Tipo de contrato é obrigatório',
@@ -87,7 +76,7 @@ export const createJobWithImageSchema = createJobSchema.extend({
 export const listJobsQuerySchema = z.object({
   page: z.string().optional(),
   limit: z.string().optional(),
-  area: z.enum(JOB_AREAS).optional(),
+  area: z.string().min(1).max(100).optional(),
   type: z.enum(JOB_TYPES).optional(),
   search: z.string().optional(),
 });

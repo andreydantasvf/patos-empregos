@@ -10,19 +10,6 @@ datasource db {
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
-enum JobArea {
-  SAUDE
-  VAREJO
-  EDUCACAO
-  TECNOLOGIA
-  ADMINISTRATIVO
-  CONSTRUCAO
-  ALIMENTACAO
-  SERVICOS_GERAIS
-  INDUSTRIA
-  OUTROS
-}
-
 enum JobType {
   CLT
   PJ
@@ -86,7 +73,7 @@ model Job {
   companyId         String
   title             String    @db.VarChar(100)
   description       String    @db.Text
-  area              JobArea
+  area              String
   type              JobType
   salary            String?
   image_url         String
