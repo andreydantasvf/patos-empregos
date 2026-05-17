@@ -11,7 +11,9 @@ import { successResponse } from '@shared/utils/response';
 
 import adminRoutes from '@modules/admin/admin.routes';
 import authRoutes from '@modules/auth/auth.routes';
+import empresaRoutes from '@modules/empresa/empresa.routes';
 import jobsRoutes from '@modules/jobs/jobs.routes';
+import paymentsRoutes from '@modules/payments/payments.routes';
 
 import dotenv from 'dotenv';
 
@@ -71,7 +73,9 @@ app.get('/health', (_req, res) => {
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/auth', authRoutes);
 app.use('/jobs', jobsRoutes);
+app.use('/payments', paymentsRoutes);
 app.use('/admin', adminRoutes);
+app.use('/empresa', empresaRoutes);
 
 // ─── 404 handler ──────────────────────────────────────────────────────────────
 app.use((_req, res) => {

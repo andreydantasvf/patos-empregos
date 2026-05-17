@@ -3,6 +3,7 @@ import { env } from '@config/env';
 import { prisma } from '@config/prisma';
 import { logger } from '@shared/utils/logger';
 import app from './app';
+import { initCronJobs } from './jobs';
 
 const PORT = parseInt(env.PORT, 10);
 
@@ -11,6 +12,8 @@ async function bootstrap() {
     // Verify DB connection before accepting traffic
     await prisma.$connect();
     logger.info('✅ Banco de dados conectado');
+
+    initCronJobs();
 
     const server = app.listen(PORT, () => {
       logger.info(`🚀 Patos Empregos API rodando em http://localhost:${PORT}`);
