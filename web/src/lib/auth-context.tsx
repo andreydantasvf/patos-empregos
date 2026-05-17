@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleAuthSuccess = (newUser: AuthUserDto, newToken: string) => {
     login(newUser, newToken);
     closeAuthModal();
-    if (newUser.role === 'ADMIN') {
+    if (newUser.type === 'admin') {
       router.push('/admin/vagas');
     }
   };

@@ -1,10 +1,22 @@
-export type Role = 'ADMIN' | 'ENTERPRISE';
+export type JobArea =
+  | 'SAUDE'
+  | 'VAREJO'
+  | 'EDUCACAO'
+  | 'TECNOLOGIA'
+  | 'ADMINISTRATIVO'
+  | 'CONSTRUCAO'
+  | 'ALIMENTACAO'
+  | 'SERVICOS_GERAIS'
+  | 'INDUSTRIA'
+  | 'OUTROS';
 
 export type JobType = 'CLT' | 'PJ' | 'FREELANCER' | 'INTERNSHIP' | 'TEMPORARY';
 
-export type JobPlan = 'BASIC' | 'PRO';
+export type JobPlan = 'BASIC' | 'FEATURED';
 
-export type JobStatus = 'PENDING' | 'ACTIVE' | 'EXPIRED';
+export type JobStatus = 'AGUARDANDO_PAGAMENTO' | 'ATIVA' | 'SUSPENSA' | 'EXPIRADA';
+
+export type PaymentStatus = 'PENDING' | 'CONFIRMED' | 'EXPIRED';
 
 export type PaginationMeta = {
   page: number;
@@ -26,10 +38,29 @@ export type ApiErrorResponse = {
   errors?: Record<string, string[]> | string[];
 };
 
+export type CompanyBasicDto = {
+  id: string;
+  name: string;
+  logo_url: string | null;
+};
+
+export type CompanyProfileDto = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  cnpj_cpf: string | null;
+  logo_url: string | null;
+  blocked: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AuthUserDto = {
   id: string;
+  name: string;
   email: string;
-  role: Role;
+  type: 'company' | 'admin';
 };
 
 export type LoginResponseDto = {
@@ -40,33 +71,39 @@ export type LoginResponseDto = {
 
 export type JobDto = {
   id: string;
-  userId: string;
-  bannerUrl: string;
+  companyId: string;
+  company?: CompanyBasicDto;
   title: string;
-  companyName: string;
-  responsibleName: string;
-  email: string;
-  whatsapp: string;
-  city: string;
+  description: string;
+  area: JobArea;
   type: JobType;
   salary: string | null;
-  description: string;
-  requirements: string;
-  benefits: string | null;
-  applicationLink: string | null;
+  image_url: string;
+  application_link: string;
   plan: JobPlan;
-  amountPaid: string;
-  paidAt: string | null;
   status: JobStatus;
-  expiresAt: string | null;
-  paymentId: string | null;
+  is_featured: boolean;
+  published_at: string | null;
+  expires_at: string | null;
+  whatsapp_sent_at: string | null;
+  suspension_reason: string | null;
+  requirements: string | null;
+  benefits: string | null;
   createdAt: string;
   updatedAt: string;
 };
 
-export type PixPaymentResponse = {
-  paymentId: string;
+export type PaymentResponseDto = {
+  preferenceId: string;
   qrCode: string;
   qrCodeBase64: string;
-  ticket_url: string;
+  ticketUrl: string;
+  amount: number;
+};
+
+export type PaymentStatusDto = {
+  status: PaymentStatus;
+  confirmedAt: string | null;
+  plan: JobPlan;
+  amount: number;
 };
