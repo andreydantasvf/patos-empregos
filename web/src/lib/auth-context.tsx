@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { AuthUserDto } from './types';
 import { useRouter } from 'next/navigation';
 import { AuthModal } from '@/components/auth-modal';
@@ -53,12 +53,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/');
   };
 
-  const openAuthModal = (tab: 'login' | 'register' = 'login') => {
+  const openAuthModal = useCallback((tab: 'login' | 'register' = 'login') => {
     setAuthModalDefaultTab(tab);
     setIsAuthModalOpen(true);
-  };
+  }, []);
 
-  const closeAuthModal = () => setIsAuthModalOpen(false);
+  const closeAuthModal = useCallback(() => setIsAuthModalOpen(false), []);
 
   const handleAuthSuccess = (newUser: AuthUserDto, newToken: string) => {
     login(newUser, newToken);
