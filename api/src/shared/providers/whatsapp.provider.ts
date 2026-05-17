@@ -17,7 +17,7 @@ export const whatsappProvider = {
     }
 
     const response = await axios.post(
-      `${evolutionUrl}/api/message/send-group/${evolutionInstance}`,
+      `${evolutionUrl}/message/sendText/${evolutionInstance}`,
       {
         number: groupId,
         text: message,

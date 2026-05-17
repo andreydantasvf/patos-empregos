@@ -1,3 +1,6 @@
+import { env } from '@/config/env';
+import { whatsappProvider } from '@/shared/providers/whatsapp.provider';
+import { messageTemplate } from '@/shared/utils/message-template';
 import type { JobDto, JobFilters } from '@modules/jobs/jobs.dto';
 import { jobsRepository } from '@modules/jobs/jobs.repository';
 import { NotFoundError } from '@shared/errors/HttpError';
@@ -35,6 +38,18 @@ export const adminService = {
         } else if (job.plan === 'PRO') {
           expiresAt.setDate(expiresAt.getDate() + 15);
           data.expiresAt = expiresAt;
+        }
+      }
+
+      if (env.WHATSAPP_GROUP_ID) {
+        const message = messageTemplate(job);
+        try {
+          await whatsappProvider.sendGroupMessage({
+            groupId: env.WHATSAPP_GROUP_ID,
+            message,
+          });
+        } catch (err) {
+          logger.error({ err, jobId: job.id }, '[Jobs] Falha ao enviar mensagem para WhatsApp');
         }
       }
     }

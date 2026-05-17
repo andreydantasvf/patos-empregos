@@ -1,5 +1,8 @@
+import { env } from '@/config/env';
 import { JobPlan, JobStatus } from '@/generated/prisma/client';
 import { AppError } from '@/shared/errors';
+import { whatsappProvider } from '@/shared/providers/whatsapp.provider';
+import { messageTemplate } from '@/shared/utils/message-template';
 import { NotFoundError } from '@shared/errors/HttpError';
 import {
   paymentProvider,
@@ -135,6 +138,18 @@ export const jobsService = {
       expiresAt,
     });
 
+    if (env.WHATSAPP_GROUP_ID) {
+      const message = messageTemplate(job);
+      try {
+        await whatsappProvider.sendGroupMessage({
+          groupId: env.WHATSAPP_GROUP_ID,
+          message,
+        });
+      } catch (err) {
+        logger.error({ err, jobId: job.id }, '[Jobs] Falha ao enviar mensagem para WhatsApp');
+      }
+    }
+
     logger.info({ jobId: job.id }, '[Jobs] Vaga ativada com sucesso pelo webhook');
   },
 
@@ -144,12 +159,12 @@ export const jobsService = {
       throw new AppError('Webhook inválido', 400);
     }
 
-    const details = await paymentProvider.getPaymentDetails(String(paymentId));
+    const details = await paymentProvider.getPaymentDetails(paymentId);
     if (
       (details.status === 'processed' && details.payment_status_detail === 'accredited') ||
       details.status_detail === 'accredited'
     ) {
-      await jobsService.activateJob(String(paymentId));
+      await jobsService.activateJob(paymentId);
       return;
     }
 
