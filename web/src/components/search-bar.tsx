@@ -165,9 +165,9 @@ export function SearchBar({
                           />
                           Todos os cargos
                         </CommandItem>
-                        {(cargos as string[]).map((cargo) => (
+                        {(cargos as string[]).map((cargo, i) => (
                           <CommandItem
-                            key={cargo}
+                            key={`${cargo}-${i}`}
                             value={cargo}
                             onSelect={(value) => {
                               onFiltersChange({ ...filters, area: value });
