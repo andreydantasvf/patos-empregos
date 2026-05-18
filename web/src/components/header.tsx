@@ -12,8 +12,6 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout, openAuthModal } = useAuth();
 
-  console.log(user)
-
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-white-paper/95 backdrop-blur supports-backdrop-filter:bg-white-paper/80">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -214,7 +212,7 @@ export function Header() {
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Link href="/admin/vagas/nova" onClick={() => setIsMenuOpen(false)}>
-                  Publicar Vaga 2
+                  Publicar Vaga
                 </Link>
               </Button>
             ) :
@@ -223,7 +221,7 @@ export function Header() {
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Link href="/publicar-vaga" onClick={() => setIsMenuOpen(false)}>
-                  Publicar Vaga 3
+                  Publicar Vaga
                 </Link>
               </Button>
             }
