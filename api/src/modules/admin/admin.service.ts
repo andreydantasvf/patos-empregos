@@ -1,6 +1,6 @@
 import { env } from '@config/env';
 import { companiesRepository } from '@modules/companies/companies.repository';
-import { JobStatus } from '@/generated/prisma/client';
+import { JobPlan, JobStatus } from '@/generated/prisma/client';
 import type { JobDto, JobFilters } from '@modules/jobs/jobs.dto';
 import { jobsRepository } from '@modules/jobs/jobs.repository';
 import { ForbiddenError, NotFoundError } from '@shared/errors/HttpError';
@@ -10,9 +10,58 @@ import { logger } from '@shared/utils/logger';
 import type { PaginationParams } from '@shared/utils/pagination';
 import { buildMeta } from '@shared/utils/pagination';
 import type { PaginationMeta } from '@shared/utils/response';
-import type { UpdateJobStatusDto } from './admin.schema';
+import type { CreateFreeJobWithImageInput, UpdateJobStatusDto } from './admin.schema';
 
 export const adminService = {
+  async createFreeJob(input: CreateFreeJobWithImageInput): Promise<JobDto> {
+    const company = await companiesRepository.findById(input.companyId);
+    if (!company) throw new NotFoundError('Empresa');
+
+    const publishedAt = new Date();
+    const days = input.plan === 'FEATURED' ? 15 : 7;
+    const expiresAt = new Date(publishedAt);
+    expiresAt.setDate(expiresAt.getDate() + days);
+
+    const job = await jobsRepository.create({
+      companyId: input.companyId,
+      title: input.title,
+      description: input.description,
+      area: input.area as never,
+      type: input.type as never,
+      salary: input.salary ?? null,
+      image_url: input.image_url,
+      application_link: input.application_link,
+      plan: input.plan as JobPlan,
+      requirements: input.requirements ?? null,
+      benefits: input.benefits ?? null,
+    });
+
+    await jobsRepository.update(job.id, {
+      status: JobStatus.ATIVA,
+      is_featured: input.plan === 'FEATURED',
+      published_at: publishedAt,
+      expires_at: expiresAt,
+      whatsapp_sent_at: new Date(),
+    });
+
+    if (env.WHATSAPP_GROUP_ID) {
+      try {
+        const message = newJobTemplate(job as never, job.company as never);
+        await whatsappProvider.sendGroupMessage({
+          groupId: env.WHATSAPP_GROUP_ID,
+          message,
+          imageUrl: job.image_url,
+        });
+      } catch (err) {
+        logger.error({ err, jobId: job.id }, '[Admin] Falha ao enviar WhatsApp para vaga gratuita');
+      }
+    }
+
+    logger.info({ jobId: job.id, companyId: input.companyId, plan: input.plan }, '[Admin] Vaga gratuita criada e ativada');
+
+    return { ...job, status: JobStatus.ATIVA, is_featured: input.plan === 'FEATURED', published_at: publishedAt, expires_at: expiresAt } as unknown as JobDto;
+  },
+
   async listJobs(
     pagination: PaginationParams,
     filters: JobFilters,
@@ -35,7 +84,7 @@ export const adminService = {
     const job = await jobsRepository.findById(id);
     if (!job) throw new NotFoundError('Vaga');
 
-    let updateData: Record<string, unknown> = { status: dto.status };
+    const updateData: Record<string, unknown> = { status: dto.status };
 
     if (dto.status === 'SUSPENSA') {
       updateData.suspension_reason = dto.motivo;

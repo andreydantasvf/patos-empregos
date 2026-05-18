@@ -1,11 +1,32 @@
+import { uploadToCloudinary } from '@/shared/providers/cloudinary.provider';
+import { ValidationError } from '@shared/errors/HttpError';
 import { parsePagination } from '@shared/utils/pagination';
 import { successResponse } from '@shared/utils/response';
 import type { NextFunction, Request, Response } from 'express';
-import type { UpdateJobStatusDto } from './admin.schema';
+import type { CreateFreeJobInput, CreateFreeJobWithImageInput, UpdateJobStatusDto } from './admin.schema';
 import { adminService } from './admin.service';
 
 export const adminController = {
   // ─── Jobs ─────────────────────────────────────────────────────────────────
+
+  async createFreeJob(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const input = req.body as CreateFreeJobInput;
+
+      if (!req.file) {
+        throw new ValidationError('Imagem da vaga é obrigatória', {
+          image: ['Imagem da vaga é obrigatória'],
+        });
+      }
+
+      const { secure_url: image_url } = await uploadToCloudinary(req.file.buffer);
+      const jobInput: CreateFreeJobWithImageInput = { ...input, image_url };
+      const job = await adminService.createFreeJob(jobInput);
+      res.status(201).json(successResponse(job, 'Vaga gratuita criada e publicada com sucesso'));
+    } catch (err) {
+      next(err);
+    }
+  },
 
   async listJobs(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
