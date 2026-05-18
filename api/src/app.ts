@@ -21,6 +21,8 @@ dotenv.config();
 
 const app: Express = express();
 
+app.set('trust proxy', 1);
+
 // ─── Security ────────────────────────────────────────────────────────────────
 app.use(helmet());
 app.use(

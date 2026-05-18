@@ -1,4 +1,5 @@
 import { env } from '@config/env';
+import { prisma } from '@config/prisma';
 import { companiesRepository } from '@modules/companies/companies.repository';
 import { JobPlan, JobStatus } from '@/generated/prisma/client';
 import type { JobDto, JobFilters } from '@modules/jobs/jobs.dto';
@@ -112,7 +113,10 @@ export const adminService = {
     const job = await jobsRepository.findById(id);
     if (!job) throw new NotFoundError('Vaga');
 
-    await jobsRepository.delete(id);
+    await prisma.$transaction([
+      prisma.payment.deleteMany({ where: { jobId: id } }),
+      prisma.job.delete({ where: { id } }),
+    ]);
     logger.info({ jobId: id }, '[Admin] Vaga removida');
   },
 
