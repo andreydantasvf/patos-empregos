@@ -11,7 +11,7 @@ import { SearchBar } from "./search-bar";
 export interface JobFilters {
   search: string;
   type: JobType | "";
-  company: string;
+  area: string;
 }
 
 export function JobList() {
@@ -21,7 +21,7 @@ export function JobList() {
   const [filters, setFilters] = useState<JobFilters>({
     search: "",
     type: "",
-    company: "",
+    area: "",
   });
   const [showFilters, setShowFilters] = useState(false);
 
@@ -31,9 +31,8 @@ export function JobList() {
       const params = new URLSearchParams();
       if (filters.search) params.append("search", filters.search);
       if (filters.type) params.append("type", filters.type);
-      if (filters.company) params.append("company", filters.company);
+      if (filters.area) params.append("area", filters.area);
 
-      // Fixed page and limit for now, ideally handled with pagination component
       params.append("page", "1");
       params.append("limit", "20");
 
@@ -49,7 +48,7 @@ export function JobList() {
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchJobs();
-    }, 500); // Debounce
+    }, 500);
     return () => clearTimeout(timer);
   }, [filters]);
 

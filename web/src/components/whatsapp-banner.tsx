@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
+import Image from "next/image";
 
 export function WhatsAppBanner() {
   return (
@@ -21,7 +21,7 @@ export function WhatsAppBanner() {
         <div className="mx-auto max-w-3xl text-center">
           <div className="mb-6 inline-flex items-center justify-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-              <MessageCircle className="h-10 w-10 text-white" />
+              <Image src="/whatsapp-svgrepo-com.svg" alt="WhatsApp" width={40} height={40} className="invert" />
             </div>
           </div>
 
@@ -40,11 +40,11 @@ export function WhatsAppBanner() {
             className="bg-white px-8 py-6 text-lg font-semibold text-whatsapp shadow-lg transition-all hover:bg-white/90 hover:shadow-xl"
           >
             <a
-              href="https://chat.whatsapp.com/seu-grupo-aqui"
+              href={process.env.NEXT_PUBLIC_WHATSAPP_URL ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <MessageCircle className="mr-3 h-6 w-6" />
+              <Image src="/whatsapp-svgrepo-com.svg" alt="WhatsApp" width={24} height={24} className="mr-3" />
               Entrar no Grupo do WhatsApp
             </a>
           </Button>

@@ -8,8 +8,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -19,96 +32,81 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import type { JobPlan, JobType } from "@/lib/types";
+import cargos from "@/assets/lista_cargos.json";
 import {
   Briefcase,
-  Building2,
-  CheckCircle2,
+  Check,
+  ChevronsUpDown,
   Crown,
   FileText,
   Image as ImageIcon,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-const jobTypes: JobType[] = [
-  "CLT",
-  "PJ",
-  "INTERNSHIP",
-  "TEMPORARY",
-  "FREELANCER",
+const jobTypes: { value: JobType; label: string }[] = [
+  { value: "CLT", label: "CLT" },
+  { value: "PJ", label: "PJ" },
+  { value: "INTERNSHIP", label: "Estágio" },
+  { value: "TEMPORARY", label: "Temporário" },
+  { value: "FREELANCER", label: "Freelancer" },
 ];
-
-const jobTypeLabels: Record<JobType, string> = {
-  CLT: "CLT",
-  PJ: "PJ",
-  INTERNSHIP: "Estágio",
-  TEMPORARY: "Temporário",
-  FREELANCER: "Freelancer",
-};
 
 interface CreateJobFormValues {
   title: string;
-  companyName: string;
-  email: string;
-  responsibleName: string;
-  whatsapp: string;
-  city: string;
+  area: string;
   type: JobType;
   salary: string;
   description: string;
   requirements: string;
   benefits: string;
-  applicationLink: string;
+  application_link: string;
   plan: JobPlan;
 }
 
 const initialFormData: CreateJobFormValues = {
   title: "",
-  companyName: "",
-  email: "",
-  responsibleName: "",
-  whatsapp: "",
-  city: "Patos-PB",
+  area: "",
   type: "CLT",
   salary: "",
   description: "",
   requirements: "",
   benefits: "",
-  applicationLink: "",
+  application_link: "",
   plan: "BASIC",
 };
 
+function capitalize(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
 export function JobForm() {
   const router = useRouter();
+  const { user, isLoading: authLoading, openAuthModal } = useAuth();
+
   const [formData, setFormData] = useState<CreateJobFormValues>(initialFormData);
-  const [bannerFile, setBannerFile] = useState<File | null>(null);
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [pixData, setPixData] = useState<any>(null);
+  const [cargoOpen, setCargoOpen] = useState(false);
 
-  const formatWhatsApp = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 2) return numbers;
-    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-  };
+  useEffect(() => {
+    if (!authLoading && !user) {
+      openAuthModal("login");
+    }
+  }, [authLoading, user, openAuthModal]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    if (name === "whatsapp") {
-      setFormData((prev) => ({ ...prev, [name]: formatWhatsApp(value) }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (name: keyof CreateJobFormValues, value: string) => {
@@ -119,20 +117,24 @@ export function JobForm() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("O banner deve ter no máximo 5MB.");
+        toast.error("A imagem deve ter no máximo 5MB.");
         return;
       }
-      setBannerFile(file);
-      const url = URL.createObjectURL(file);
-      setBannerPreview(url);
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!bannerFile) {
-      toast.error("O banner da vaga é obrigatório.");
+    if (!imageFile) {
+      toast.error("A imagem da vaga é obrigatória.");
+      return;
+    }
+
+    if (!formData.area) {
+      toast.error("Selecione o cargo da vaga.");
       return;
     }
 
@@ -140,35 +142,35 @@ export function JobForm() {
 
     try {
       const payload = new FormData();
-      payload.append("banner", bannerFile);
+      payload.append("image", imageFile);
       payload.append("title", formData.title);
-      payload.append("companyName", formData.companyName);
-      payload.append("email", formData.email);
-      payload.append("responsibleName", formData.responsibleName);
-      payload.append("whatsapp", formData.whatsapp);
-      payload.append("city", formData.city);
+      payload.append("area", formData.area);
       payload.append("type", formData.type);
       payload.append("description", formData.description);
-      payload.append("requirements", formData.requirements);
       payload.append("plan", formData.plan);
 
       if (formData.salary) payload.append("salary", formData.salary);
+      if (formData.requirements)
+        payload.append("requirements", formData.requirements);
       if (formData.benefits) payload.append("benefits", formData.benefits);
-      if (formData.applicationLink) payload.append("applicationLink", formData.applicationLink);
+      if (formData.application_link)
+        payload.append("application_link", formData.application_link);
 
       const res = await apiFetch<any>("/jobs", {
         method: "POST",
         body: payload,
       });
 
-      setPixData(res.data.payment);
-      setIsSuccess(true);
-      toast.success("Vaga criada com sucesso! Realize o pagamento para ativá-la.");
+      const jobId = res.data.job.id;
+      localStorage.setItem(`pix_data_${jobId}`, JSON.stringify(res.data.payment));
+
+      toast.success("Vaga criada! Realize o pagamento para ativá-la.");
+      router.push(`/pagamento/${jobId}`);
     } catch (error: any) {
       if (error.errors) {
         Object.values(error.errors).forEach((errMsgs: any) => {
           if (Array.isArray(errMsgs)) {
-            errMsgs.forEach(msg => toast.error(msg));
+            errMsgs.forEach((msg) => toast.error(msg));
           } else {
             toast.error(errMsgs as string);
           }
@@ -181,50 +183,23 @@ export function JobForm() {
     }
   };
 
-  if (isSuccess && pixData) {
+  if (authLoading) {
     return (
-      <Card className="mx-auto max-w-2xl">
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle2 className="h-10 w-10 text-green-600" />
-          </div>
-          <h2 className="mb-2 text-2xl font-bold text-foreground">
-            Vaga cadastrada com sucesso!
-          </h2>
-          <p className="mb-6 max-w-md text-muted-foreground">
-            Sua vaga foi salva. Para que ela seja publicada e divulgada, por favor, realize o pagamento via PIX.
+      <div className="flex justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Card className="mx-auto max-w-2xl text-center">
+        <CardContent className="py-12">
+          <p className="text-muted-foreground mb-4">
+            Você precisa estar logado para publicar uma vaga.
           </p>
-
-          <div className="bg-muted p-6 rounded-lg w-full max-w-sm flex flex-col items-center gap-4">
-            <h3 className="font-semibold text-lg">Pagar com PIX</h3>
-            {pixData.qrCodeBase64 && (
-              <img src={`data:image/png;base64,${pixData.qrCodeBase64}`} alt="QR Code PIX" className="w-48 h-48" />
-            )}
-            <div className="w-full">
-              <Label className="text-xs">Código PIX Copia e Cola</Label>
-              <Input value={pixData.qrCode} readOnly className="text-xs mt-1" />
-              <Button
-                className="w-full mt-2"
-                variant="outline"
-                onClick={() => {
-                  navigator.clipboard.writeText(pixData.qrCode);
-                  toast.success("Código PIX copiado!");
-                }}
-              >
-                Copiar Código
-              </Button>
-            </div>
-            {pixData.ticket_url && (
-              <Button asChild variant="link" className="w-full">
-                <a href={pixData.ticket_url} target="_blank" rel="noopener noreferrer">
-                  Ver recibo do Mercado Pago
-                </a>
-              </Button>
-            )}
-          </div>
-
-          <Button className="mt-8 w-full max-w-sm" onClick={() => router.push("/minhas-vagas")}>
-            Ir para Minhas Vagas
+          <Button onClick={() => openAuthModal("login")}>
+            Entrar / Cadastrar
           </Button>
         </CardContent>
       </Card>
@@ -241,7 +216,7 @@ export function JobForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-8">
-
+          {/* Plano */}
           <div className="space-y-4">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
               <Crown className="h-5 w-5 text-accent" />
@@ -249,43 +224,66 @@ export function JobForm() {
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <Card
-                className={`cursor-pointer transition-all ${formData.plan === 'BASIC' ? 'border-primary ring-2 ring-primary/20' : ''}`}
-                onClick={() => setFormData({ ...formData, plan: 'BASIC' })}
+                className={`cursor-pointer transition-all ${formData.plan === "BASIC" ? "border-primary ring-2 ring-primary/20" : ""}`}
+                onClick={() => setFormData({ ...formData, plan: "BASIC" })}
               >
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-bold text-lg mb-2">Plano Básico - R$ 20</h4>
-                  <p className="text-sm text-muted-foreground">Publicação padrão no site e no grupo do WhatsApp.</p>
+                  <h4 className="font-bold text-lg mb-1">Plano Básico</h4>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <span className="text-sm text-muted-foreground line-through">R$39,90</span>
+                    <span className="text-xs font-semibold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">50% OFF</span>
+                  </div>
+                  <p className="text-xl font-bold text-secondary mb-1">R$19,90</p>
+                  <p className="text-sm text-muted-foreground">
+                    Publicação por 7 dias no site e no grupo do WhatsApp.
+                  </p>
                 </CardContent>
               </Card>
               <Card
-                className={`cursor-pointer transition-all ${formData.plan === 'PRO' ? 'border-primary ring-2 ring-primary/20' : ''}`}
-                onClick={() => setFormData({ ...formData, plan: 'PRO' })}
+                className={`cursor-pointer transition-all ${formData.plan === "FEATURED" ? "border-primary ring-2 ring-primary/20" : ""}`}
+                onClick={() => setFormData({ ...formData, plan: "FEATURED" })}
               >
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-bold text-lg mb-2">Plano PRO - R$ 30</h4>
-                  <p className="text-sm text-muted-foreground">Destaque na página inicial e topo da lista do WhatsApp.</p>
+                  <h4 className="font-bold text-lg mb-1">Plano Destaque</h4>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <span className="text-sm text-muted-foreground line-through">R$69,90</span>
+                    <span className="text-xs font-semibold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">50% OFF</span>
+                  </div>
+                  <p className="text-xl font-bold text-secondary mb-1">R$34,90</p>
+                  <p className="text-sm text-muted-foreground">
+                    15 dias + destaque no topo + repost automático a cada 5
+                    dias.
+                  </p>
                 </CardContent>
               </Card>
             </div>
           </div>
 
+          {/* Imagem */}
           <div className="space-y-4">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
               <ImageIcon className="h-5 w-5 text-accent" />
-              Banner da Vaga *
+              Imagem da Vaga *
             </h3>
             <div
               className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
               onClick={() => fileInputRef.current?.click()}
             >
-              {bannerPreview ? (
+              {imagePreview ? (
                 <div className="relative w-full h-48">
-                  <Image src={bannerPreview} alt="Preview do Banner" fill className="object-contain rounded-md" />
+                  <Image
+                    src={imagePreview}
+                    alt="Preview"
+                    fill
+                    className="object-contain rounded-md"
+                  />
                 </div>
               ) : (
                 <div className="text-center">
                   <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Clique para fazer upload da imagem (Max: 5MB)</p>
+                  <p className="text-sm text-muted-foreground">
+                    Clique para fazer upload da imagem (Max: 5MB)
+                  </p>
                 </div>
               )}
               <input
@@ -298,110 +296,74 @@ export function JobForm() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-              <Building2 className="h-5 w-5 text-accent" />
-              Dados da Empresa
-            </h3>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="companyName">Nome da Empresa *</Label>
-                <Input
-                  id="companyName"
-                  name="companyName"
-                  placeholder="Ex: TechPatos Soluções"
-                  value={formData.companyName}
-                  onChange={handleInputChange}
-                  required
-                  minLength={2}
-                  maxLength={100}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="responsibleName">Nome do Responsável *</Label>
-                <Input
-                  id="responsibleName"
-                  name="responsibleName"
-                  placeholder="Seu nome"
-                  value={formData.responsibleName}
-                  onChange={handleInputChange}
-                  required
-                  minLength={3}
-                  maxLength={100}
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail Corporativo *</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="contato@empresa.com"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="whatsapp">WhatsApp *</Label>
-                <Input
-                  id="whatsapp"
-                  name="whatsapp"
-                  type="tel"
-                  placeholder="(83) 99999-9999"
-                  value={formData.whatsapp}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
+          {/* Dados da Vaga */}
           <div className="space-y-4">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
               <Briefcase className="h-5 w-5 text-accent" />
               Dados da Vaga
             </h3>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="title">Título da Vaga *</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  placeholder="Ex: Desenvolvedor Full Stack"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  required
-                  minLength={5}
-                  maxLength={150}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="city">Cidade *</Label>
-                <Input
-                  id="city"
-                  name="city"
-                  placeholder="Patos-PB"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  required
-                  minLength={2}
-                  maxLength={100}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="title">Título da Vaga *</Label>
+              <Input
+                id="title"
+                name="title"
+                placeholder="Ex: Desenvolvedor Full Stack"
+                value={formData.title}
+                onChange={handleInputChange}
+                required
+                minLength={5}
+                maxLength={100}
+              />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label className="mb-2.5">Tipo da Vaga</Label>
+                <Label>Cargo *</Label>
+                <Popover open={cargoOpen} onOpenChange={setCargoOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={cargoOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      {formData.area
+                        ? capitalize(formData.area)
+                        : "Selecione o cargo..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar cargo..." />
+                      <CommandList>
+                        <CommandEmpty>Nenhum cargo encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          {(cargos as string[]).map((cargo, i) => (
+                            <CommandItem
+                              key={`${cargo}-${i}`}
+                              value={cargo}
+                              onSelect={(value) => {
+                                handleSelectChange("area", value);
+                                setCargoOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${formData.area === cargo ? "opacity-100" : "opacity-0"}`}
+                              />
+                              {capitalize(cargo)}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Tipo da Vaga</Label>
                 <Select
                   value={formData.type}
                   onValueChange={(value) => handleSelectChange("type", value)}
@@ -410,28 +372,29 @@ export function JobForm() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {jobTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {jobTypeLabels[type]}
+                    {jobTypes.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="salary">Faixa Salarial (opcional)</Label>
-                <Input
-                  id="salary"
-                  name="salary"
-                  placeholder="Ex: R$ 2.000 - R$ 3.500"
-                  value={formData.salary}
-                  onChange={handleInputChange}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="salary">Faixa Salarial (opcional)</Label>
+              <Input
+                id="salary"
+                name="salary"
+                placeholder="Ex: R$ 2.000 - R$ 3.500"
+                value={formData.salary}
+                onChange={handleInputChange}
+              />
             </div>
           </div>
 
+          {/* Detalhes */}
           <div className="space-y-4">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
               <FileText className="h-5 w-5 text-accent" />
@@ -449,12 +412,12 @@ export function JobForm() {
                 rows={4}
                 required
                 minLength={30}
-                maxLength={5000}
+                maxLength={3000}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="requirements">Requisitos *</Label>
+              <Label htmlFor="requirements">Requisitos (opcional)</Label>
               <Textarea
                 id="requirements"
                 name="requirements"
@@ -462,8 +425,6 @@ export function JobForm() {
                 value={formData.requirements}
                 onChange={handleInputChange}
                 rows={3}
-                required
-                minLength={10}
                 maxLength={3000}
               />
             </div>
@@ -481,14 +442,16 @@ export function JobForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="applicationLink">Link para Candidatura (opcional)</Label>
+              <Label htmlFor="application_link">
+                Link / E-mail para Candidatura *
+              </Label>
               <Input
-                id="applicationLink"
-                name="applicationLink"
-                type="url"
-                placeholder="https://..."
-                value={formData.applicationLink}
+                id="application_link"
+                name="application_link"
+                placeholder="https://... ou candidato@empresa.com"
+                value={formData.application_link}
                 onChange={handleInputChange}
+                required
               />
             </div>
           </div>

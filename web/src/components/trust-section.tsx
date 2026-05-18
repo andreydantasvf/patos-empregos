@@ -1,4 +1,6 @@
+import { Button } from "@/components/ui/button";
 import { Building2, MapPin, MessageCircle, Zap } from "lucide-react";
+import Link from "next/link";
 
 const features = [
   {
@@ -60,6 +62,19 @@ export function TrustSection() {
               </p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-16 rounded-2xl bg-secondary p-8 text-white text-center">
+          <h3 className="text-2xl font-bold mb-3">
+            Você é empresa e precisa contratar?
+          </h3>
+          <p className="text-white/80 mb-6 max-w-xl mx-auto">
+            Anuncie sua vaga e alcance candidatos locais em Patos-PB.
+            Divulgação no site e no WhatsApp a partir de R$39.
+          </p>
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Link href="/anunciar">Ver planos e preços →</Link>
+          </Button>
         </div>
       </div>
     </section>

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, Search, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 export function HeroSection() {
@@ -12,12 +12,10 @@ export function HeroSection() {
 
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center">
-          {/* Descomentar depois */}
-
-          {/* <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-secondary">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-secondary">
             <TrendingUp className="h-4 w-4 text-accent" />
-            <span>+200 vagas publicadas na região</span>
-          </div> */}
+            <span>Vagas de emprego em Patos-PB e região</span>
+          </div>
 
           <h1 className="mb-6 text-balance text-4xl font-bold tracking-tight text-secondary md:text-5xl lg:text-6xl">
             Encontre oportunidades de emprego em{" "}
@@ -50,8 +48,8 @@ export function HeroSection() {
               variant="outline"
               className="w-full border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground sm:w-auto"
             >
-              <Link href="/publicar-vaga">
-                Publique sua vaga
+              <Link href="/anunciar">
+                Anunciar vaga
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>

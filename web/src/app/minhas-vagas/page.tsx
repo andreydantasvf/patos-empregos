@@ -20,6 +20,7 @@ export default function MinhasVagasPage() {
   const router = useRouter();
   const [jobs, setJobs] = useState<JobDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [renewingJobId, setRenewingJobId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -38,10 +39,28 @@ export default function MinhasVagasPage() {
       setIsLoading(true);
       const res = await apiFetch<JobDto[]>("/jobs/me");
       setJobs(res.data);
-    } catch (error: any) {
+    } catch {
       toast.error("Erro ao carregar suas vagas.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRenew = async (jobId: string) => {
+    setRenewingJobId(jobId);
+    try {
+      const res = await apiFetch<any>(`/jobs/${jobId}/renovar`, {
+        method: "POST",
+      });
+      localStorage.setItem(
+        `pix_data_${jobId}`,
+        JSON.stringify(res.data.payment),
+      );
+      router.push(`/pagamento/${jobId}`);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao iniciar renovação.");
+    } finally {
+      setRenewingJobId(null);
     }
   };
 
@@ -82,7 +101,13 @@ export default function MinhasVagasPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {jobs.map((job) => (
-              <JobCard key={job.id} job={job} />
+              <JobCard
+                key={job.id}
+                job={job}
+                showStatus
+                onRenew={handleRenew}
+                isRenewing={renewingJobId === job.id}
+              />
             ))}
           </div>
         )}

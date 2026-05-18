@@ -63,14 +63,14 @@ export function Footer() {
             <h3 className="text-lg font-semibold text-white">Contato</h3>
             <div className="flex flex-col gap-3">
               <a
-                href="mailto:techgenesisweb@gmail.com"
+                href="mailto:contato@genesisweb.tech"
                 className="flex items-center gap-2 text-sm text-secondary-foreground/80 transition-colors hover:text-primary"
               >
                 <Mail className="h-4 w-4" />
-                <span>techgenesisweb@gmail.com</span>
+                <span>contato@genesisweb.tech</span>
               </a>
               <a
-                href="https://wa.me/5583999999999"
+                href="https://wa.me/5583921542086"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-secondary-foreground/80 transition-colors hover:text-primary"

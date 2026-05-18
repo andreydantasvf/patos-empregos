@@ -50,11 +50,20 @@ export const metadata: Metadata = {
     title: "Patos Empregos | Vagas de Emprego em Patos-PB",
     description:
       "Encontre as melhores oportunidades de emprego em Patos-PB. Vagas locais de empresas da região.",
+    images: [
+      {
+        url: "https://patosempregos.com.br/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Patos Empregos — Vagas de Emprego em Patos-PB",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Patos Empregos | Vagas de Emprego em Patos-PB",
     description: "Encontre as melhores oportunidades de emprego em Patos-PB.",
+    images: ["https://patosempregos.com.br/og-image.png"],
   },
   icons: {
     icon: [
@@ -84,6 +93,7 @@ export const viewport: Viewport = {
 
 import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "@/components/ui/sonner";
+import { WhatsAppSupportButton } from "@/components/whatsapp-support-button";
 
 export default function RootLayout({
   children,
@@ -99,6 +109,7 @@ export default function RootLayout({
           {children}
           {process.env.NODE_ENV === "production" && <Analytics />}
           <Toaster />
+          <WhatsAppSupportButton />
         </AuthProvider>
       </body>
     </html>
