@@ -1,45 +1,36 @@
 import { z } from 'zod';
 
-const phoneRegex = /^(\+55)?(\s)?\(?[1-9]{2}\)?(\s)?9?[6-9][0-9]{3}[-\s]?[0-9]{4}$/;
+const JOB_TYPES = ['CLT', 'PJ', 'FREELANCER', 'INTERNSHIP', 'TEMPORARY'] as const;
+
+const applicationLinkSchema = z
+  .string({ required_error: 'Link ou e-mail de candidatura é obrigatório' })
+  .trim()
+  .refine(
+    (val) => {
+      if (!val) return false;
+      const isUrl = /^https?:\/\/.+/.test(val);
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+      return isUrl || isEmail;
+    },
+    { message: 'Deve ser uma URL válida (http:// ou https://) ou um e-mail válido' },
+  );
 
 export const createJobSchema = z.object({
   title: z
     .string({ required_error: 'Título é obrigatório' })
     .min(5, 'Título deve ter no mínimo 5 caracteres')
-    .max(150, 'Título deve ter no máximo 150 caracteres')
+    .max(100, 'Título deve ter no máximo 100 caracteres')
     .trim(),
 
-  companyName: z
-    .string({ required_error: 'Nome da empresa é obrigatório' })
-    .min(2, 'Nome da empresa deve ter no mínimo 2 caracteres')
-    .max(100, 'Nome da empresa deve ter no máximo 100 caracteres')
-    .trim(),
+  area: z
+    .string({ required_error: 'Cargo é obrigatório' })
+    .min(2, 'Mínimo 2 caracteres')
+    .max(100, 'Máximo 100 caracteres')
+    .trim()
+    .transform((s) => s.toLowerCase()),
 
-  email: z
-    .string({ required_error: 'E-mail para recebimento de currículos é obrigatório' })
-    .email('E-mail inválido')
-    .max(255)
-    .trim(),
-
-  responsibleName: z
-    .string({ required_error: 'Nome do responsável é obrigatório' })
-    .min(3, 'Nome do responsável deve ter no mínimo 3 caracteres')
-    .max(100, 'Nome do responsável deve ter no máximo 100 caracteres')
-    .trim(),
-
-  whatsapp: z
-    .string({ required_error: 'WhatsApp é obrigatório' })
-    .regex(phoneRegex, 'Formato de WhatsApp inválido. Ex: (83) 99999-9999')
-    .trim(),
-
-  city: z
-    .string({ required_error: 'Cidade é obrigatória' })
-    .min(2, 'Cidade deve ter no mínimo 2 caracteres')
-    .max(100, 'Cidade deve ter no máximo 100 caracteres')
-    .trim(),
-
-  type: z.enum(['CLT', 'PJ', 'FREELANCER', 'INTERNSHIP', 'TEMPORARY'], {
-    required_error: 'Tipo de vaga é obrigatório',
+  type: z.enum(JOB_TYPES, {
+    required_error: 'Tipo de contrato é obrigatório',
     invalid_type_error: 'Tipo inválido. Use: CLT, PJ, FREELANCER, INTERNSHIP ou TEMPORARY',
   }),
 
@@ -52,15 +43,18 @@ export const createJobSchema = z.object({
 
   description: z
     .string({ required_error: 'Descrição é obrigatória' })
-    .min(30, 'Descrição deve ter no mínimo 30 caracteres')
-    .max(5000, 'Descrição deve ter no máximo 5000 caracteres')
+    .min(20, 'Descrição deve ter no mínimo 20 caracteres')
+    .max(3000, 'Descrição deve ter no máximo 3000 caracteres')
     .trim(),
 
+  application_link: applicationLinkSchema,
+
   requirements: z
-    .string({ required_error: 'Requisitos são obrigatórios' })
-    .min(10, 'Requisitos devem ter no mínimo 10 caracteres')
+    .string()
     .max(3000, 'Requisitos devem ter no máximo 3000 caracteres')
-    .trim(),
+    .trim()
+    .optional()
+    .nullable(),
 
   benefits: z
     .string()
@@ -69,35 +63,24 @@ export const createJobSchema = z.object({
     .optional()
     .nullable(),
 
-  applicationLink: z
-    .string()
-    .url('Link de candidatura deve ser uma URL válida')
-    .max(500)
-    .optional()
-    .nullable()
-    .or(z.literal('')),
-
-  plan: z.enum(['BASIC', 'PRO'], {
+  plan: z.enum(['BASIC', 'FEATURED'], {
     required_error: 'Plano é obrigatório',
-    invalid_type_error: 'Plano inválido',
+    invalid_type_error: 'Plano inválido. Use: BASIC ou FEATURED',
   }),
 });
 
-/** Schema usado internamente após injeção do bannerUrl vindo do upload Cloudinary */
-export const createJobWithBannerSchema = createJobSchema.extend({
-  bannerUrl: z.string().url(),
+export const createJobWithImageSchema = createJobSchema.extend({
+  image_url: z.string().url(),
 });
 
 export const listJobsQuerySchema = z.object({
   page: z.string().optional(),
   limit: z.string().optional(),
-  city: z.string().optional(),
-  type: z.enum(['CLT', 'PJ', 'FREELANCER', 'INTERNSHIP', 'TEMPORARY']).optional(),
-  company: z.string().optional(),
+  area: z.string().min(1).max(100).optional(),
+  type: z.enum(JOB_TYPES).optional(),
   search: z.string().optional(),
 });
 
 export type CreateJobInput = z.infer<typeof createJobSchema>;
-export type CreateJobWithBannerInput = z.infer<typeof createJobWithBannerSchema>;
+export type CreateJobWithImageInput = z.infer<typeof createJobWithImageSchema>;
 export type ListJobsQuery = z.infer<typeof listJobsQuerySchema>;
-

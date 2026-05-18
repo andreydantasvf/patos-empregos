@@ -1,33 +1,26 @@
-import { env } from '@/config/env';
 import { JobPlan, JobStatus } from '@/generated/prisma/client';
-import { AppError } from '@/shared/errors';
-import { whatsappProvider } from '@/shared/providers/whatsapp.provider';
-import { messageTemplate } from '@/shared/utils/message-template';
-import { NotFoundError } from '@shared/errors/HttpError';
-import {
-  paymentProvider,
-  PixPaymentResponse,
-  WebhookValidationParams,
-} from '@shared/providers/payment.provider';
+import { companiesRepository } from '@modules/companies/companies.repository';
+import { ForbiddenError, NotFoundError } from '@shared/errors/HttpError';
+import { paymentProvider } from '@shared/providers/payment.provider';
 import { logger } from '@shared/utils/logger';
 import type { PaginationParams } from '@shared/utils/pagination';
 import { buildMeta } from '@shared/utils/pagination';
 import type { PaginationMeta } from '@shared/utils/response';
-import { usersService } from '../users/users.service';
+import { prisma } from '@config/prisma';
 import type { JobDto } from './jobs.dto';
 import { jobsRepository } from './jobs.repository';
-import type { CreateJobWithBannerInput, ListJobsQuery } from './jobs.schema';
+import type { CreateJobWithImageInput, ListJobsQuery } from './jobs.schema';
 
-const PLAN_PRICES = {
-  BASIC: 20,
-  PRO: 35,
-  PREMIUM: 0, // Disabled
+// Preços originais: R$39,90 (BASIC) e R$69,90 (FEATURED)
+// Promoção de lançamento: 50% de desconto
+const PLAN_PRICES: Record<string, number> = {
+  BASIC: 19.9,
+  FEATURED: 34.9,
 };
 
-const PLAN_DAYS = {
+const PLAN_DAYS: Record<string, number> = {
   BASIC: 7,
-  PRO: 15,
-  PREMIUM: 0,
+  FEATURED: 15,
 };
 
 export const jobsService = {
@@ -36,146 +29,171 @@ export const jobsService = {
     query: ListJobsQuery,
   ): Promise<{ jobs: JobDto[]; meta: PaginationMeta }> {
     const { jobs, total } = await jobsRepository.findAll(pagination, {
-      city: query.city,
-      type: query.type,
-      company: query.company,
+      area: query.area as never,
+      type: query.type as never,
       search: query.search,
-      status: JobStatus.ACTIVE,
+      status: JobStatus.ATIVA,
     });
 
-    // TODO: Filter expired jobs if not handled by a cronjob, or update their status here.
-    const activeJobs = jobs.filter((job) => !job.expiresAt || job.expiresAt > new Date());
-
     return {
-      jobs: activeJobs as JobDto[],
+      jobs: jobs as unknown as JobDto[],
       meta: buildMeta(total, pagination.page, pagination.limit),
     };
   },
 
-  async listByUser(
-    userId: string,
+  async listByCompany(
+    companyId: string,
     pagination: PaginationParams,
   ): Promise<{ jobs: JobDto[]; meta: PaginationMeta }> {
-    const { jobs, total } = await jobsRepository.findAll(pagination, {
-      userId,
-    });
+    const { jobs, total } = await jobsRepository.findAll(pagination, { companyId });
 
-    return { jobs: jobs as JobDto[], meta: buildMeta(total, pagination.page, pagination.limit) };
+    return {
+      jobs: jobs as unknown as JobDto[],
+      meta: buildMeta(total, pagination.page, pagination.limit),
+    };
   },
 
-  async getById(id: string, userId?: string): Promise<JobDto> {
+  async getById(id: string): Promise<JobDto> {
     const job = await jobsRepository.findById(id);
-    if (!job) throw new NotFoundError('Vaga');
-    if (userId && job.userId !== userId && job.status !== JobStatus.ACTIVE)
-      throw new NotFoundError('Vaga');
-    if (job.expiresAt && job.expiresAt < new Date()) throw new NotFoundError('Vaga expirada');
-    return job as JobDto;
+    if (!job || job.status !== JobStatus.ATIVA) throw new NotFoundError('Vaga');
+    return job as unknown as JobDto;
   },
 
   async create(
-    userId: string,
-    input: CreateJobWithBannerInput,
-  ): Promise<{ job: JobDto; payment: PixPaymentResponse }> {
-    const user = await usersService.findById(userId);
-    if (!user) {
-      throw new NotFoundError('Usuário');
-    }
+    companyId: string,
+    input: CreateJobWithImageInput,
+  ): Promise<{ job: JobDto; payment: { preferenceId: string; qrCode: string; qrCodeBase64: string; ticketUrl: string; amount: number } }> {
+    const company = await companiesRepository.findById(companyId);
+    if (!company) throw new NotFoundError('Empresa');
 
-    const amount = PLAN_PRICES[input.plan as keyof typeof PLAN_PRICES] || 20;
+    const amount = PLAN_PRICES[input.plan] ?? PLAN_PRICES.BASIC;
 
-    // Generate Pix
-    const payment = await paymentProvider.generatePixPayment({
+    const pixPayment = await paymentProvider.generatePixPayment({
       transaction_amount: amount,
-      description: `Pagamento de vaga - ${input.plan}`,
+      description: `Patos Empregos – ${input.title} – Plano ${input.plan === 'FEATURED' ? 'Destaque' : 'Básico'}`,
       payer: {
-        name: user.nome,
-        email: user.email,
-        identification: {
-          type: 'CPF',
-          number: user.cpf || '00000000000',
-        },
+        name: company.name,
+        email: company.email,
+        identification: { type: 'CPF', number: company.cnpj_cpf ?? '00000000000' },
       },
     });
 
     const job = await jobsRepository.create({
-      ...input,
-      userId,
-      email: user.email,
+      companyId,
+      title: input.title,
+      description: input.description,
+      area: input.area as never,
+      type: input.type as never,
       salary: input.salary ?? null,
-      benefits: input.benefits ?? null,
-      applicationLink: input.applicationLink || null,
+      image_url: input.image_url,
+      application_link: input.application_link,
       plan: input.plan as JobPlan,
-      amountPaid: amount.toString(),
-      paymentId: payment.paymentId,
-      status: JobStatus.PENDING,
+      requirements: input.requirements ?? null,
+      benefits: input.benefits ?? null,
+    });
+
+    await prisma.payment.create({
+      data: {
+        jobId: job.id,
+        companyId,
+        plan: input.plan as JobPlan,
+        amount,
+        status: 'PENDING',
+        mp_preference_id: pixPayment.preferenceId,
+      },
     });
 
     logger.info(
-      { jobId: job.id, company: job.companyName, plan: job.plan },
-      '[Jobs] Nova vaga cadastrada — aguardando pagamento',
+      { jobId: job.id, companyId, plan: job.plan },
+      '[Jobs] Vaga criada — aguardando pagamento',
     );
 
-    return { job: job as JobDto, payment };
+    return {
+      job: job as unknown as JobDto,
+      payment: {
+        preferenceId: pixPayment.preferenceId,
+        qrCode: pixPayment.qrCode,
+        qrCodeBase64: pixPayment.qrCodeBase64,
+        ticketUrl: pixPayment.ticketUrl,
+        amount,
+      },
+    };
   },
 
-  async activateJob(paymentId: string): Promise<void> {
-    const job = await jobsRepository.findByPaymentId(paymentId);
+  async activateJob(jobId: string): Promise<void> {
+    const job = await jobsRepository.findById(jobId);
     if (!job) {
-      logger.warn({ paymentId }, '[Jobs] Webhook recebido para paymentId desconhecido');
+      logger.warn({ jobId }, '[Jobs] activateJob chamado para job desconhecido');
       return;
     }
 
-    if (job.status === JobStatus.ACTIVE) {
-      return; // Already active
-    }
+    if (job.status === JobStatus.ATIVA) return;
 
-    const days = PLAN_DAYS[job.plan as keyof typeof PLAN_DAYS] || 7;
-    const expiresAt = new Date();
+    const days = PLAN_DAYS[job.plan] ?? PLAN_DAYS.BASIC;
+    const publishedAt = new Date();
+    const expiresAt = new Date(publishedAt);
     expiresAt.setDate(expiresAt.getDate() + days);
 
     await jobsRepository.update(job.id, {
-      status: JobStatus.ACTIVE,
-      paidAt: new Date(),
-      expiresAt,
+      status: JobStatus.ATIVA,
+      is_featured: job.plan === JobPlan.FEATURED,
+      published_at: publishedAt,
+      expires_at: expiresAt,
+      whatsapp_sent_at: new Date(),
     });
 
-    if (env.WHATSAPP_GROUP_ID) {
-      const message = messageTemplate(job);
-      try {
-        await whatsappProvider.sendGroupMessage({
-          groupId: env.WHATSAPP_GROUP_ID,
-          message,
-        });
-      } catch (err) {
-        logger.error({ err, jobId: job.id }, '[Jobs] Falha ao enviar mensagem para WhatsApp');
-      }
-    }
-
-    logger.info({ jobId: job.id }, '[Jobs] Vaga ativada com sucesso pelo webhook');
+    logger.info({ jobId: job.id, plan: job.plan }, '[Jobs] Vaga ativada com sucesso');
   },
 
-  async webhookPix(data: WebhookValidationParams, paymentId: string): Promise<void> {
-    const isValid = paymentProvider.validateWebhook(data);
-    if (!isValid) {
-      throw new AppError('Webhook inválido', 400);
+  async renewJob(
+    jobId: string,
+    companyId: string,
+  ): Promise<{ payment: { preferenceId: string; qrCode: string; qrCodeBase64: string; ticketUrl: string; amount: number } }> {
+    const job = await jobsRepository.findById(jobId);
+    if (!job) throw new NotFoundError('Vaga');
+    if (job.companyId !== companyId) throw new ForbiddenError();
+    if (job.status !== JobStatus.EXPIRADA) {
+      throw new ForbiddenError();
     }
 
-    const details = await paymentProvider.getPaymentDetails(paymentId);
-    if (
-      (details.status === 'processed' && details.payment_status_detail === 'accredited') ||
-      details.status_detail === 'accredited'
-    ) {
-      await jobsService.activateJob(paymentId);
-      return;
-    }
+    const company = await companiesRepository.findById(companyId);
+    if (!company) throw new NotFoundError('Empresa');
 
-    logger.info(
-      {
-        paymentId,
-        status: details.status,
-        paymentStatusDetail: details.payment_status_detail,
+    const amount = PLAN_PRICES[job.plan] ?? PLAN_PRICES.BASIC;
+
+    const pixPayment = await paymentProvider.generatePixPayment({
+      transaction_amount: amount,
+      description: `Patos Empregos – ${job.title} – Renovação Plano ${job.plan === 'FEATURED' ? 'Destaque' : 'Básico'}`,
+      payer: {
+        name: company.name,
+        email: company.email,
+        identification: { type: 'CPF', number: company.cnpj_cpf ?? '00000000000' },
       },
-      '[Jobs] Webhook recebido, mas pagamento ainda não está confirmado',
-    );
+    });
+
+    await prisma.payment.create({
+      data: {
+        jobId: job.id,
+        companyId,
+        plan: job.plan,
+        amount,
+        status: 'PENDING',
+        mp_preference_id: pixPayment.preferenceId,
+      },
+    });
+
+    await jobsRepository.update(job.id, { status: JobStatus.AGUARDANDO_PAGAMENTO });
+
+    logger.info({ jobId: job.id }, '[Jobs] Renovação iniciada — aguardando pagamento');
+
+    return {
+      payment: {
+        preferenceId: pixPayment.preferenceId,
+        qrCode: pixPayment.qrCode,
+        qrCodeBase64: pixPayment.qrCodeBase64,
+        ticketUrl: pixPayment.ticketUrl,
+        amount,
+      },
+    };
   },
 };

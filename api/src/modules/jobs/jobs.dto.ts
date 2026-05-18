@@ -1,53 +1,53 @@
-import { JobPlan, JobStatus, JobType } from '@/generated/prisma/enums';
+import type { JobPlan, JobStatus, JobType } from '@/generated/prisma/enums';
+
+export interface CompanyBasicDto {
+  id: string;
+  name: string;
+  logo_url: string | null;
+}
 
 export interface JobDto {
   id: string;
-  bannerUrl: string;
+  companyId: string;
+  company?: CompanyBasicDto;
   title: string;
-  companyName: string;
-  responsibleName: string;
-  whatsapp: string;
-  city: string;
+  description: string;
+  area: string;
   type: JobType;
   salary: string | null;
-  description: string;
-  requirements: string;
-  benefits: string | null;
-  applicationLink: string | null;
+  image_url: string;
+  application_link: string;
   plan: JobPlan;
-  amountPaid: string;
-  paidAt: Date | null;
   status: JobStatus;
-  expiresAt: Date | null;
-  paymentId: string | null;
+  is_featured: boolean;
+  published_at: Date | null;
+  expires_at: Date | null;
+  whatsapp_sent_at: Date | null;
+  suspension_reason: string | null;
+  requirements: string | null;
+  benefits: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateJobDto {
-  userId: string;
-  bannerUrl: string;
+  companyId: string;
   title: string;
-  companyName: string;
-  responsibleName: string;
-  email: string;
-  whatsapp: string;
-  city: string;
+  description: string;
+  area: string;
   type: JobType;
   salary?: string | null;
-  description: string;
-  requirements: string;
-  benefits?: string | null;
-  applicationLink?: string | null;
+  image_url: string;
+  application_link: string;
   plan: JobPlan;
-  amountPaid: string;
+  requirements?: string | null;
+  benefits?: string | null;
 }
 
 export interface JobFilters {
-  userId?: string;
-  city?: string;
+  companyId?: string;
+  area?: string;
   type?: JobType;
-  company?: string;
   search?: string;
   status?: JobStatus;
 }

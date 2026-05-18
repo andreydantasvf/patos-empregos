@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 export interface JwtPayload {
   sub: string;
   email: string;
-  role: string;
+  type: 'company' | 'admin';
   iat?: number;
   exp?: number;
 }

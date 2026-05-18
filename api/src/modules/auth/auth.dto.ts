@@ -1,9 +1,8 @@
-import { Role } from "@/generated/prisma/enums";
-
 export interface AuthUserDto {
   id: string;
+  name: string;
   email: string;
-  role: Role;
+  type: 'company' | 'admin';
 }
 
 export interface LoginResponseDto {

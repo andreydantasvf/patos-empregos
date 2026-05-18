@@ -8,13 +8,17 @@ import { createJobSchema } from './jobs.schema';
 const router: Router = Router();
 
 router.get('/', jobsController.list);
-
-router.get('/me', authMiddleware, jobsController.listByUser);
-
+router.get('/me', authMiddleware, jobsController.listByCompany);
 router.get('/:id', jobsController.getById);
 
-router.post('/', authMiddleware, upload.single('banner'), validateBody(createJobSchema), jobsController.create);
+router.post(
+  '/',
+  authMiddleware,
+  upload.single('image'),
+  validateBody(createJobSchema),
+  jobsController.create,
+);
 
-router.post('/webhook/pix', jobsController.webhookPix);
+router.post('/:id/renovar', authMiddleware, jobsController.renew);
 
 export default router;
