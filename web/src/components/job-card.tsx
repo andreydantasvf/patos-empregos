@@ -89,7 +89,7 @@ export function JobCard({ job }: JobCardProps) {
             alt={job.companyName}
             fill
             sizes="(max-width: 768px) 100vw, 300px"
-            className="object-contain"
+            className="object-cover"
           />
         </div>
 
