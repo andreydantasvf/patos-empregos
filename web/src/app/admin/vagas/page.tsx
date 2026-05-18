@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { EmptyState } from "@/components/empty-state";
@@ -14,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Ban, RotateCcw, Send, Trash2, MoreHorizontal } from "lucide-react";
+import { Loader2, Ban, RotateCcw, Send, Trash2, MoreHorizontal, Plus } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -152,13 +153,21 @@ export default function AdminVagasPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-secondary">
-            Administração de Vagas
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Gerencie todas as vagas cadastradas na plataforma.
-          </p>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-secondary">
+              Administração de Vagas
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Gerencie todas as vagas cadastradas na plataforma.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/admin/vagas/nova">
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Vaga Gratuita
+            </Link>
+          </Button>
         </div>
 
         {isLoading ? (

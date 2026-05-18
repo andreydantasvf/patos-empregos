@@ -70,7 +70,7 @@ export function Footer() {
                 <span>contato@genesisweb.tech</span>
               </a>
               <a
-                href="https://wa.me/5583999999999"
+                href="https://wa.me/5583921542086"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-secondary-foreground/80 transition-colors hover:text-primary"
