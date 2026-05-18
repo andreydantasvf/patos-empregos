@@ -4,11 +4,11 @@
   "description": "API REST da plataforma regional de empregos Patos Empregos",
   "author": "Genesis Web",
   "license": "MIT",
-  "main": "dist/server.js",
+  "main": "dist/src/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
     "build": "tsc && tsc-alias",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
     "prisma:seed": "ts-node -r tsconfig-paths/register prisma/seed.ts",
@@ -68,5 +68,8 @@
       "eslint --fix",
       "prettier --write"
     ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@prisma/engines", "prisma", "sharp"]
   }
 }
