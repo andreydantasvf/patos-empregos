@@ -27,7 +27,7 @@ export const upload: Multer = multer({
  */
 export const uploadToCloudinary = (
   buffer: Buffer,
-  folder = 'patos-empregos/banners',
+  folder = env.CLOUDINARY_FOLDER,
 ): Promise<UploadApiResponse> =>
   new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
