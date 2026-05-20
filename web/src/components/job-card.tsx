@@ -46,10 +46,14 @@ function formatRelativeDate(dateStr: string): string {
   return `${Math.floor(days / 30)} mês${Math.floor(days / 30) > 1 ? "es" : ""} atrás`;
 }
 
-function formatExpiresAt(dateStr: string): { label: string; urgent: boolean } | null {
+function formatExpiresAt(
+  dateStr: string,
+): { label: string; urgent: boolean } | null {
   const date = new Date(dateStr);
   const now = new Date();
-  const days = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const days = Math.ceil(
+    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   if (days <= 0) return null; // já encerrada — não mostrar no card público
   return null; // mais de 7 dias: não vale a pena mostrar no card
@@ -98,7 +102,9 @@ export function JobCard({
   const expiresInfo = job.expires_at ? formatExpiresAt(job.expires_at) : null;
 
   return (
-    <Card className={`group relative overflow-hidden border-border bg-card transition-all duration-300 ${job.is_featured ? "ring-2 ring-amber-400/40 border-amber-300/60" : ""}`}>
+    <Card
+      className={`group relative overflow-hidden border-border bg-card transition-all duration-300 ${job.is_featured ? "ring-2 ring-amber-400/40 border-amber-300/60" : ""}`}
+    >
       {job.is_featured && (
         <div className="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-900 shadow">
           <Star className="h-3 w-3 fill-amber-900" />
@@ -166,14 +172,16 @@ export function JobCard({
           </div>
         )}
 
-        <div className="relative w-full h-40 mb-3 bg-muted rounded-md overflow-hidden">
-          <Image
-            src={job.image_url || "/placeholder.png"}
-            alt={companyName}
-            fill
-            sizes="(max-width: 768px) 100vw, 300px"
-            className="object-cover"
-          />
+        <div className="flex justify-center bg-muted/40 px-4 py-6 mb-3 rounded-md">
+          <div className="relative w-full h-56 md:h-40">
+            <Image
+              src={job.image_url}
+              alt={companyName}
+              fill
+              sizes="(max-width: 768px) 100vw, 300px"
+              className="object-contain"
+            />
+          </div>
         </div>
 
         <div className="mb-3 flex flex-wrap gap-2">
@@ -197,7 +205,9 @@ export function JobCard({
             <span>Publicado {formatRelativeDate(publishDate)}</span>
           </div>
           {expiresInfo && (
-            <div className={`flex items-center gap-2 ${expiresInfo.urgent ? "text-red-600 font-medium" : "text-orange-600"}`}>
+            <div
+              className={`flex items-center gap-2 ${expiresInfo.urgent ? "text-red-600 font-medium" : "text-orange-600"}`}
+            >
               <CalendarClock className="h-4 w-4 shrink-0" />
               <span>{expiresInfo.label}</span>
             </div>

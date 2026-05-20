@@ -98,7 +98,10 @@ export default async function JobDetailPage({
   };
 
   // Escape </script> to prevent tag injection when embedding JSON-LD
-  const safeJsonLd = JSON.stringify(jsonLd).replace(/<\/script>/gi, "<\\/script>");
+  const safeJsonLd = JSON.stringify(jsonLd).replace(
+    /<\/script>/gi,
+    "<\\/script>",
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
