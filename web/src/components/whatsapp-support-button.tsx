@@ -17,6 +17,7 @@ export function WhatsAppSupportButton() {
     >
       <Image
         src="/whatsapp-svgrepo-com.svg"
+        loading="eager"
         alt="WhatsApp"
         width={22}
         height={22}

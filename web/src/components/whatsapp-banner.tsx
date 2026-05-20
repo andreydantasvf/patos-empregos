@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Bell, Users } from "lucide-react";
 import Image from "next/image";
 
 export function WhatsAppBanner() {
@@ -21,7 +22,14 @@ export function WhatsAppBanner() {
         <div className="mx-auto max-w-3xl text-center">
           <div className="mb-6 inline-flex items-center justify-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-              <Image src="/whatsapp-svgrepo-com.svg" alt="WhatsApp" width={40} height={40} className="invert" />
+              <Image
+                src="/whatsapp-svgrepo-com.svg"
+                alt="WhatsApp"
+                loading="eager"
+                width={40}
+                height={40}
+                className="invert"
+              />
             </div>
           </div>
 
@@ -44,21 +52,28 @@ export function WhatsAppBanner() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Image src="/whatsapp-svgrepo-com.svg" alt="WhatsApp" width={24} height={24} className="mr-3" />
+              <Image
+                src="/whatsapp-svgrepo-com.svg"
+                alt="WhatsApp"
+                loading="eager"
+                width={24}
+                height={24}
+                className="mr-3"
+              />
               Entrar no Grupo do WhatsApp
             </a>
           </Button>
 
-          {/* <div className="mt-10 flex flex-wrap items-center justify-center gap-8 text-white/80">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-8 text-white/80">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              <span className="text-sm">+1.000 membros</span>
+              <span className="text-sm">+100 membros</span>
             </div>
             <div className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
               <span className="text-sm">Vagas em tempo real</span>
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
     </section>

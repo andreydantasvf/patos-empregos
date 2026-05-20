@@ -1,12 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import PatosEmpregosLogo from "../../public/menor-no-bg-apenas-logo-patos-empregos.png";
-import { useAuth } from "@/lib/auth-context";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -50,29 +50,29 @@ export function Header() {
                   Admin
                 </Link>
               )}
-              <Link
-                href="/minhas-vagas"
-                className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
-              >
-                Minhas Vagas
-              </Link>
               {user.type === "company" && (
-                <Link
-                  href="/empresa/perfil"
-                  className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
-                >
-                  Perfil
-                </Link>
+                <>
+                  <Link
+                    href="/minhas-vagas"
+                    className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                  >
+                    Minhas Vagas
+                  </Link>
+                  <Link
+                    href="/empresa/perfil"
+                    className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                  >
+                    Perfil
+                  </Link>
+                </>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={logout}
-                className="text-muted-foreground hover:text-foreground"
+                className="flex items-center cursor-pointer text-muted-foreground hover:text-accent"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
-              </Button>
+              </button>
             </>
           ) : (
             <>
@@ -83,14 +83,14 @@ export function Header() {
                 Para Empresas
               </Link>
               <button
-                onClick={() => openAuthModal('login')}
-                className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                onClick={() => openAuthModal("login")}
+                className="cursor-pointer text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
               >
                 Entrar
               </button>
               <button
-                onClick={() => openAuthModal('register')}
-                className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+                onClick={() => openAuthModal("register")}
+                className="cursor-pointer text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
               >
                 Cadastrar
               </button>
@@ -98,20 +98,20 @@ export function Header() {
           )}
 
           {user && user?.type === "admin" ? (
-          <Button
-            asChild
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <Link href="/admin/vagas/nova">Publicar Vaga</Link>
-          </Button>
-          ) :
-          <Button
-            asChild
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <Link href="/publicar-vaga">Publicar Vaga</Link>
-          </Button>
-          }
+            <Button
+              asChild
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Link href="/admin/vagas/nova">Publicar Vaga</Link>
+            </Button>
+          ) : (
+            <Button
+              asChild
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Link href="/publicar-vaga">Publicar Vaga</Link>
+            </Button>
+          )}
         </nav>
 
         <button
@@ -192,13 +192,19 @@ export function Header() {
                   Para Empresas
                 </Link>
                 <button
-                  onClick={() => { openAuthModal('login'); setIsMenuOpen(false); }}
+                  onClick={() => {
+                    openAuthModal("login");
+                    setIsMenuOpen(false);
+                  }}
                   className="text-left text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
                 >
                   Entrar
                 </button>
                 <button
-                  onClick={() => { openAuthModal('register'); setIsMenuOpen(false); }}
+                  onClick={() => {
+                    openAuthModal("register");
+                    setIsMenuOpen(false);
+                  }}
                   className="text-left text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
                 >
                   Cadastrar
@@ -211,20 +217,26 @@ export function Header() {
                 asChild
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                <Link href="/admin/vagas/nova" onClick={() => setIsMenuOpen(false)}>
+                <Link
+                  href="/admin/vagas/nova"
+                  onClick={() => setIsMenuOpen(false)}
+                >
                   Publicar Vaga
                 </Link>
               </Button>
-            ) :
+            ) : (
               <Button
                 asChild
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                <Link href="/publicar-vaga" onClick={() => setIsMenuOpen(false)}>
+                <Link
+                  href="/publicar-vaga"
+                  onClick={() => setIsMenuOpen(false)}
+                >
                   Publicar Vaga
                 </Link>
               </Button>
-            }
+            )}
           </nav>
         </div>
       )}

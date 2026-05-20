@@ -1,29 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { EmptyState } from "@/components/empty-state";
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
-import { apiFetch } from "@/lib/api";
-import { JobDto } from "@/lib/types";
-import { useAuth } from "@/lib/auth-context";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Ban, RotateCcw, Send, Trash2, MoreHorizontal, Plus } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +19,32 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import { JobDto } from "@/lib/types";
+import {
+  Ban,
+  Loader2,
+  MoreHorizontal,
+  Plus,
+  RotateCcw,
+  Send,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const statusStyles: Record<string, string> = {
   ATIVA: "bg-green-500/10 text-green-600 border-green-500/20",
@@ -104,7 +112,10 @@ export default function AdminVagasPage() {
     try {
       await apiFetch(`/admin/jobs/${suspendTarget}/status`, {
         method: "PATCH",
-        body: JSON.stringify({ status: "SUSPENSA", motivo: suspendReason.trim() }),
+        body: JSON.stringify({
+          status: "SUSPENSA",
+          motivo: suspendReason.trim(),
+        }),
       });
       toast.success("Vaga suspensa.");
       setSuspendTarget(null);
@@ -266,10 +277,9 @@ export default function AdminVagasPage() {
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem
-                            className="text-red-500 focus:text-red-500"
                             onClick={() => handleDelete(job.id)}
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className="mr-2 h-4 w-4 text-red-500" />
                             Excluir
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -312,10 +322,7 @@ export default function AdminVagasPage() {
             </p>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setSuspendTarget(null)}
-            >
+            <Button variant="outline" onClick={() => setSuspendTarget(null)}>
               Cancelar
             </Button>
             <Button
