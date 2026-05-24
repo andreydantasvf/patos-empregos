@@ -82,10 +82,6 @@ const initialFormData: FormValues = {
   plan: "BASIC",
 };
 
-function capitalize(s: string): string {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-}
-
 export function AdminJobForm() {
   const router = useRouter();
   const [formData, setFormData] = useState<FormValues>(initialFormData);
@@ -395,7 +391,6 @@ export function AdminJobForm() {
                 value={formData.salary}
                 onChange={handleSalaryChange}
                 inputMode="numeric"
-                pattern="[0-9]*"
               />
             </div>
           </div>

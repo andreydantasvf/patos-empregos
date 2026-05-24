@@ -172,8 +172,8 @@ export function JobCard({
           </div>
         )}
 
-        <div className="flex justify-center bg-muted/40 px-4 py-6 mb-3 rounded-md">
-          <div className="relative w-full h-56 md:h-40">
+        <div className="flex justify-center bg-muted/40 px-4  mb-3 rounded-md">
+          <div className="relative w-full h-56 md:h-100">
             <Image
               src={job.image_url}
               alt={companyName}
