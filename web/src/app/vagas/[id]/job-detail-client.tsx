@@ -121,8 +121,8 @@ export function JobDetailClient({ job }: { job: JobDto }) {
                   src={job.image_url}
                   alt={job.title}
                   fill
-                  className="object-contain"
                   sizes="(max-width: 768px) 100vw, 512px"
+                  className="cursor-pointer object-contain"
                 />
               </div>
             </div>
@@ -139,7 +139,7 @@ export function JobDetailClient({ job }: { job: JobDto }) {
                 <button
                   ref={closeButtonRef}
                   aria-label="Fechar visualização da imagem"
-                  className="absolute top-4 right-4 z-50 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm focus:outline-hidden focus:ring-2 focus:ring-white"
+                  className="cursor-pointer absolute top-4 right-4 z-50 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm focus:outline-hidden focus:ring-2 focus:ring-white"
                   onClick={() => setViewerOpen(false)}
                 >
                   <XIcon className="h-5 w-5" />
@@ -304,7 +304,7 @@ export function JobDetailClient({ job }: { job: JobDto }) {
                 <Briefcase className="h-5 w-5 text-accent" />
                 Descrição da vaga
               </h2>
-              <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line">
+              <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line wrap-break-word">
                 {job.description}
               </div>
             </section>
@@ -315,7 +315,7 @@ export function JobDetailClient({ job }: { job: JobDto }) {
                   <CheckCircle2 className="h-5 w-5 text-accent" />
                   Requisitos
                 </h2>
-                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line">
+                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line wrap-break-word">
                   {job.requirements}
                 </div>
               </section>
@@ -327,7 +327,7 @@ export function JobDetailClient({ job }: { job: JobDto }) {
                   <Gift className="h-5 w-5 text-accent" />
                   Benefícios
                 </h2>
-                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line">
+                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground whitespace-pre-line wrap-break-word">
                   {job.benefits}
                 </div>
               </section>
