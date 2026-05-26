@@ -53,6 +53,7 @@ const steps = [
 const basicFeatures = [
   "Publicação por 7 dias",
   "Divulgação no grupo de WhatsApp",
+  "Repost no grupo no 4º dia",
   "Visível na página de vagas",
   "Link ou e-mail para candidatura",
 ];
@@ -61,7 +62,7 @@ const featuredFeatures = [
   "Publicação por 15 dias",
   "Divulgação no grupo de WhatsApp",
   "Destaque no topo da lista",
-  "Repost automático a cada 5 dias",
+  "Repost automático a cada 3 dias",
   "Link ou e-mail para candidatura",
 ];
 
