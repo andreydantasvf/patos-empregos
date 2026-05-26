@@ -26,7 +26,7 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-6 lg:flex">
           <Link
             href="/"
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
@@ -38,6 +38,13 @@ export function Header() {
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
           >
             Ver Vagas
+          </Link>
+
+          <Link
+            href="/anunciar"
+            className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+          >
+            Para Empresas
           </Link>
 
           {user ? (
@@ -76,12 +83,6 @@ export function Header() {
             </>
           ) : (
             <>
-              <Link
-                href="/anunciar"
-                className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
-              >
-                Para Empresas
-              </Link>
               <button
                 onClick={() => openAuthModal("login")}
                 className="cursor-pointer text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
@@ -115,7 +116,7 @@ export function Header() {
         </nav>
 
         <button
-          className="md:hidden"
+          className="lg:hidden"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
         >
@@ -128,7 +129,7 @@ export function Header() {
       </div>
 
       {isMenuOpen && (
-        <div className="border-t border-border/40 bg-white-paper md:hidden">
+        <div className="border-t border-border/40 bg-white-paper lg:hidden">
           <nav className="container mx-auto flex flex-col gap-4 px-4 py-4">
             <Link
               href="/"
@@ -143,6 +144,14 @@ export function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               Ver Vagas
+            </Link>
+
+            <Link
+              href="/anunciar"
+              className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Para Empresas
             </Link>
 
             {user ? (
@@ -163,6 +172,7 @@ export function Header() {
                 >
                   Minhas Vagas
                 </Link>
+
                 {user.type === "company" && (
                   <Link
                     href="/empresa/perfil"
@@ -184,13 +194,6 @@ export function Header() {
               </>
             ) : (
               <>
-                <Link
-                  href="/anunciar"
-                  className="text-sm font-medium text-foreground/80 transition-colors hover:text-accent"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Para Empresas
-                </Link>
                 <button
                   onClick={() => {
                     openAuthModal("login");
