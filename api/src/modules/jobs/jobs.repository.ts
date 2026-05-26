@@ -107,6 +107,17 @@ export const jobsRepository = {
     });
   },
 
+  async findBasicForRepost(cutoffDate: Date) {
+    return prisma.job.findMany({
+      where: {
+        plan: 'BASIC',
+        status: JobStatus.ATIVA,
+        whatsapp_sent_at: { lte: cutoffDate },
+      },
+      include: { company: { select: companySelect } },
+    });
+  },
+
   async updateWhatsappSentAt(id: string) {
     return prisma.job.update({
       where: { id },

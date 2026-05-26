@@ -22,12 +22,7 @@ export const createJobSchema = z.object({
     .max(100, 'Título deve ter no máximo 100 caracteres')
     .trim(),
 
-  area: z
-    .string({ required_error: 'Cargo é obrigatório' })
-    .min(2, 'Mínimo 2 caracteres')
-    .max(100, 'Máximo 100 caracteres')
-    .trim()
-    .transform((s) => s.toLowerCase()),
+  area: z.string().max(50, 'Salário deve ter no máximo 50 caracteres').trim().optional().nullable(),
 
   type: z.enum(JOB_TYPES, {
     required_error: 'Tipo de contrato é obrigatório',
