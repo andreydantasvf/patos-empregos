@@ -28,7 +28,7 @@ export function HeroSection() {
 
           <p className="mx-auto mb-8 max-w-2xl text-pretty text-lg text-muted-foreground md:text-xl">
             As vagas do sertão reunidas em um só lugar. Conectamos candidatos e
-            empresas de forma rápida, simples e gratuita.
+            empresas de forma rápida e simples.
           </p>
 
           <div className="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row">

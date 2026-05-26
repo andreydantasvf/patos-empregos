@@ -53,6 +53,7 @@ const steps = [
 const basicFeatures = [
   "Publicação por 7 dias",
   "Divulgação no grupo de WhatsApp",
+  "Repost no grupo no 4º dia",
   "Visível na página de vagas",
   "Link ou e-mail para candidatura",
 ];
@@ -61,7 +62,7 @@ const featuredFeatures = [
   "Publicação por 15 dias",
   "Divulgação no grupo de WhatsApp",
   "Destaque no topo da lista",
-  "Repost automático a cada 5 dias",
+  "Repost automático a cada 3 dias",
   "Link ou e-mail para candidatura",
 ];
 
@@ -116,6 +117,7 @@ export default function AnunciarPage() {
                       <Image
                         src="/whatsapp-svgrepo-com.svg"
                         alt="WhatsApp"
+                        loading="eager"
                         width={36}
                         height={36}
                       />
@@ -172,13 +174,20 @@ export default function AnunciarPage() {
                   </div>
                   <ul className="mb-6 space-y-3">
                     {basicFeatures.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm">
+                      <li
+                        key={feature}
+                        className="flex items-center gap-3 text-sm"
+                      >
                         <Check className="h-4 w-4 shrink-0 text-primary" />
                         <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button asChild variant="outline" className="w-full border-secondary text-secondary hover:bg-secondary hover:text-white">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full border-secondary text-secondary hover:bg-secondary hover:text-white"
+                  >
                     <Link href="/publicar-vaga">Publicar vaga básica</Link>
                   </Button>
                 </CardContent>
@@ -212,13 +221,19 @@ export default function AnunciarPage() {
                   </div>
                   <ul className="mb-6 space-y-3">
                     {featuredFeatures.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm">
+                      <li
+                        key={feature}
+                        className="flex items-center gap-3 text-sm"
+                      >
                         <Check className="h-4 w-4 shrink-0 text-primary" />
                         <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button
+                    asChild
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
                     <Link href="/publicar-vaga">Publicar vaga em destaque</Link>
                   </Button>
                 </CardContent>

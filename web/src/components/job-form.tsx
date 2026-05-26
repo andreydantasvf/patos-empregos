@@ -1,5 +1,6 @@
 "use client";
 
+import { CargoAutocomplete } from "@/components/cargo-autocomplete";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,21 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -34,11 +22,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import type { JobPlan, JobType } from "@/lib/types";
-import cargos from "@/assets/lista_cargos.json";
+import { formatSalaryFromDigits } from "@/utils/format-salary";
 import {
   Briefcase,
-  Check,
-  ChevronsUpDown,
   Crown,
   FileText,
   Image as ImageIcon,
@@ -81,20 +67,16 @@ const initialFormData: CreateJobFormValues = {
   plan: "BASIC",
 };
 
-function capitalize(s: string): string {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-}
-
 export function JobForm() {
   const router = useRouter();
   const { user, isLoading: authLoading, openAuthModal } = useAuth();
 
-  const [formData, setFormData] = useState<CreateJobFormValues>(initialFormData);
+  const [formData, setFormData] =
+    useState<CreateJobFormValues>(initialFormData);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cargoOpen, setCargoOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -109,7 +91,15 @@ export function JobForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (name: keyof CreateJobFormValues, value: string) => {
+  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const maskedValue = formatSalaryFromDigits(e.target.value);
+    setFormData((prev) => ({ ...prev, salary: maskedValue }));
+  };
+
+  const handleSelectChange = (
+    name: keyof CreateJobFormValues,
+    value: string,
+  ) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -162,7 +152,10 @@ export function JobForm() {
       });
 
       const jobId = res.data.job.id;
-      localStorage.setItem(`pix_data_${jobId}`, JSON.stringify(res.data.payment));
+      localStorage.setItem(
+        `pix_data_${jobId}`,
+        JSON.stringify(res.data.payment),
+      );
 
       toast.success("Vaga criada! Realize o pagamento para ativá-la.");
       router.push(`/pagamento/${jobId}`);
@@ -230,10 +223,16 @@ export function JobForm() {
                 <CardContent className="p-4 text-center">
                   <h4 className="font-bold text-lg mb-1">Plano Básico</h4>
                   <div className="flex items-center justify-center gap-2 mb-1">
-                    <span className="text-sm text-muted-foreground line-through">R$39,90</span>
-                    <span className="text-xs font-semibold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">50% OFF</span>
+                    <span className="text-sm text-muted-foreground line-through">
+                      R$39,90
+                    </span>
+                    <span className="text-xs font-semibold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">
+                      50% OFF
+                    </span>
                   </div>
-                  <p className="text-xl font-bold text-secondary mb-1">R$19,90</p>
+                  <p className="text-xl font-bold text-secondary mb-1">
+                    R$19,90
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     Publicação por 7 dias no site e no grupo do WhatsApp.
                   </p>
@@ -246,10 +245,16 @@ export function JobForm() {
                 <CardContent className="p-4 text-center">
                   <h4 className="font-bold text-lg mb-1">Plano Destaque</h4>
                   <div className="flex items-center justify-center gap-2 mb-1">
-                    <span className="text-sm text-muted-foreground line-through">R$69,90</span>
-                    <span className="text-xs font-semibold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">50% OFF</span>
+                    <span className="text-sm text-muted-foreground line-through">
+                      R$69,90
+                    </span>
+                    <span className="text-xs font-semibold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">
+                      50% OFF
+                    </span>
                   </div>
-                  <p className="text-xl font-bold text-secondary mb-1">R$34,90</p>
+                  <p className="text-xl font-bold text-secondary mb-1">
+                    R$34,90
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     15 dias + destaque no topo + repost automático a cada 5
                     dias.
@@ -318,49 +323,14 @@ export function JobForm() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Cargo *</Label>
-                <Popover open={cargoOpen} onOpenChange={setCargoOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={cargoOpen}
-                      className="w-full justify-between font-normal"
-                    >
-                      {formData.area
-                        ? capitalize(formData.area)
-                        : "Selecione o cargo..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Buscar cargo..." />
-                      <CommandList>
-                        <CommandEmpty>Nenhum cargo encontrado.</CommandEmpty>
-                        <CommandGroup>
-                          {(cargos as string[]).map((cargo, i) => (
-                            <CommandItem
-                              key={`${cargo}-${i}`}
-                              value={cargo}
-                              onSelect={(value) => {
-                                handleSelectChange("area", value);
-                                setCargoOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={`mr-2 h-4 w-4 ${formData.area === cargo ? "opacity-100" : "opacity-0"}`}
-                              />
-                              {capitalize(cargo)}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
+              <CargoAutocomplete
+                id="area"
+                label="Cargo"
+                value={formData.area}
+                onValueChange={(value) => handleSelectChange("area", value)}
+                required
+                placeholder="Digite ou selecione um cargo..."
+              />
 
               <div className="space-y-2">
                 <Label>Tipo da Vaga</Label>
@@ -387,9 +357,11 @@ export function JobForm() {
               <Input
                 id="salary"
                 name="salary"
-                placeholder="Ex: R$ 2.000 - R$ 3.500"
+                placeholder="R$ 0.000,00"
                 value={formData.salary}
-                onChange={handleInputChange}
+                onChange={handleSalaryChange}
+                inputMode="numeric"
+                pattern="[0-9]*"
               />
             </div>
           </div>

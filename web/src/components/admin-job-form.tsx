@@ -1,5 +1,6 @@
 "use client";
 
+import { CargoAutocomplete } from "@/components/cargo-autocomplete";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -33,7 +34,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
 import type { CompanyProfileDto, JobPlan, JobType } from "@/lib/types";
-import cargos from "@/assets/lista_cargos.json";
+import { formatSalaryFromDigits } from "@/utils/format-salary";
 import {
   Briefcase,
   Building2,
@@ -81,10 +82,6 @@ const initialFormData: FormValues = {
   plan: "BASIC",
 };
 
-function capitalize(s: string): string {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-}
-
 export function AdminJobForm() {
   const router = useRouter();
   const [formData, setFormData] = useState<FormValues>(initialFormData);
@@ -95,7 +92,6 @@ export function AdminJobForm() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cargoOpen, setCargoOpen] = useState(false);
 
   useEffect(() => {
     apiFetch<CompanyProfileDto[]>("/admin/empresas")
@@ -108,6 +104,11 @@ export function AdminJobForm() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const maskedValue = formatSalaryFromDigits(e.target.value);
+    setFormData((prev) => ({ ...prev, salary: maskedValue }));
   };
 
   const handleSelectChange = (name: keyof FormValues, value: string) => {
@@ -156,7 +157,8 @@ export function AdminJobForm() {
       payload.append("plan", formData.plan);
       payload.append("application_link", formData.application_link);
       if (formData.salary) payload.append("salary", formData.salary);
-      if (formData.requirements) payload.append("requirements", formData.requirements);
+      if (formData.requirements)
+        payload.append("requirements", formData.requirements);
       if (formData.benefits) payload.append("benefits", formData.benefits);
 
       await apiFetch("/admin/jobs", { method: "POST", body: payload });
@@ -207,7 +209,9 @@ export function AdminJobForm() {
                     aria-expanded={companyOpen}
                     className="w-full justify-between font-normal"
                   >
-                    {selectedCompany ? selectedCompany.name : "Selecione a empresa..."}
+                    {selectedCompany
+                      ? selectedCompany.name
+                      : "Selecione a empresa..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -261,7 +265,9 @@ export function AdminJobForm() {
               >
                 <CardContent className="p-4 text-center">
                   <h4 className="font-bold text-lg mb-1">Plano Básico</h4>
-                  <p className="text-xl font-bold text-secondary mb-1">7 dias</p>
+                  <p className="text-xl font-bold text-secondary mb-1">
+                    7 dias
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     Publicação no site e no grupo do WhatsApp.
                   </p>
@@ -277,7 +283,9 @@ export function AdminJobForm() {
               >
                 <CardContent className="p-4 text-center">
                   <h4 className="font-bold text-lg mb-1">Plano Destaque</h4>
-                  <p className="text-xl font-bold text-secondary mb-1">15 dias</p>
+                  <p className="text-xl font-bold text-secondary mb-1">
+                    15 dias
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     Destaque no topo + repost automático a cada 5 dias.
                   </p>
@@ -345,54 +353,14 @@ export function AdminJobForm() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Cargo *</Label>
-                <Popover open={cargoOpen} onOpenChange={setCargoOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={cargoOpen}
-                      className="w-full justify-between font-normal"
-                    >
-                      {formData.area
-                        ? capitalize(formData.area)
-                        : "Selecione o cargo..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Buscar cargo..." />
-                      <CommandList>
-                        <CommandEmpty>Nenhum cargo encontrado.</CommandEmpty>
-                        <CommandGroup>
-                          {(cargos as string[]).map((cargo, i) => (
-                            <CommandItem
-                              key={`${cargo}-${i}`}
-                              value={cargo}
-                              onSelect={(value) => {
-                                handleSelectChange("area", value);
-                                setCargoOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={`mr-2 h-4 w-4 ${
-                                  formData.area === cargo
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                }`}
-                              />
-                              {capitalize(cargo)}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
+              <CargoAutocomplete
+                id="area"
+                label="Cargo"
+                value={formData.area}
+                onValueChange={(value) => handleSelectChange("area", value)}
+                required
+                placeholder="Digite ou selecione um cargo..."
+              />
 
               <div className="space-y-2">
                 <Label>Tipo da Vaga</Label>
@@ -419,9 +387,10 @@ export function AdminJobForm() {
               <Input
                 id="salary"
                 name="salary"
-                placeholder="Ex: R$ 1.500 - R$ 2.000"
+                placeholder="R$ 0.000,00"
                 value={formData.salary}
-                onChange={handleInputChange}
+                onChange={handleSalaryChange}
+                inputMode="numeric"
               />
             </div>
           </div>

@@ -5,7 +5,7 @@ import PatosEmpregosLogo from "../../public/menor-no-bg-apenas-logo-patos-empreg
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-secondary text-secondary-foreground">
+    <footer className="bg-secondary text-secondary-foreground">
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">

@@ -38,8 +38,6 @@ export function JobList() {
 
       const res = await apiFetch<JobDto[]>(`/jobs?${params.toString()}`);
       setJobs(res.data);
-    } catch (error) {
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
