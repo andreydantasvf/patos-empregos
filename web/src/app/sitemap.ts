@@ -1,7 +1,7 @@
+import { SERVER_API_URL, SITE_URL } from "@/lib/config";
 import type { MetadataRoute } from "next";
 
-const BASE = "https://patosempregos.com.br";
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
+const BASE = SITE_URL;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const res = await fetch(`${API_URL}/jobs?limit=500&page=1`, {
+    const res = await fetch(`${SERVER_API_URL}/jobs?limit=500&page=1`, {
       next: { revalidate: 3600 },
     });
     if (!res.ok) return staticRoutes;

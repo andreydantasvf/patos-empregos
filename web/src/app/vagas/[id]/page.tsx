@@ -1,16 +1,14 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { SERVER_API_URL, SITE_URL } from "@/lib/config";
 import type { ApiSuccessResponse, JobDto } from "@/lib/types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JobDetailClient } from "./job-detail-client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
-const BASE_URL = "https://patosempregos.com.br";
-
 async function fetchJob(id: string): Promise<JobDto | null> {
   try {
-    const res = await fetch(`${API_URL}/jobs/${id}`, {
+    const res = await fetch(`${SERVER_API_URL}/jobs/${id}`, {
       next: { revalidate: 300 },
     });
     if (!res.ok) return null;
@@ -94,7 +92,7 @@ export default async function JobDetailPage({
           value: { "@type": "QuantitativeValue", description: job.salary },
         }
       : undefined,
-    url: `${BASE_URL}/vagas/${job.id}`,
+    url: `${SITE_URL}/vagas/${job.id}`,
   };
 
   // Escape </script> to prevent tag injection when embedding JSON-LD

@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import PatosEmpregosLogo from "../../public/menor-no-bg-apenas-logo-patos-empregos.png";
 
+const SUPPORT_URL = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_URL;
+
 export function Footer() {
   return (
     <footer className="bg-secondary text-secondary-foreground">
@@ -69,15 +71,17 @@ export function Footer() {
                 <Mail className="h-4 w-4" />
                 <span>contato@genesisweb.tech</span>
               </a>
-              <a
-                href="https://wa.me/5583921542086"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-secondary-foreground/80 transition-colors hover:text-primary"
-              >
-                <Phone className="h-4 w-4" />
-                <span>(83) 92154-2086</span>
-              </a>
+              {SUPPORT_URL && (
+                <a
+                  href={SUPPORT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-secondary-foreground/80 transition-colors hover:text-primary"
+                >
+                  <Phone className="h-4 w-4" />
+                  <span>WhatsApp</span>
+                </a>
+              )}
             </div>
           </div>
 

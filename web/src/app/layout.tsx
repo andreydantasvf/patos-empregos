@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/config";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
@@ -45,14 +46,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: "https://patosempregos.com.br",
+    url: SITE_URL,
     siteName: "Patos Empregos",
     title: "Patos Empregos | Vagas de Emprego em Patos-PB",
     description:
       "Encontre as melhores oportunidades de emprego em Patos-PB. Vagas locais de empresas da região.",
     images: [
       {
-        url: "https://patosempregos.com.br/og-image.png",
+        url: `${SITE_URL}/og-image.png`,
         width: 1200,
         height: 630,
         alt: "Patos Empregos — Vagas de Emprego em Patos-PB",
@@ -63,7 +64,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Patos Empregos | Vagas de Emprego em Patos-PB",
     description: "Encontre as melhores oportunidades de emprego em Patos-PB.",
-    images: ["https://patosempregos.com.br/og-image.png"],
+    images: [`${SITE_URL}/og-image.png`],
   },
   icons: {
     icon: [
@@ -107,7 +108,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           {children}
-          {process.env.NODE_ENV === "production" && <Analytics />}
+          {process.env.VERCEL === "1" && <Analytics />}
           <Toaster />
           <WhatsAppSupportButton />
         </AuthProvider>
