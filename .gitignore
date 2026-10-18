@@ -1,0 +1,15 @@
+# Dependências e builds
+node_modules/
+dist/
+.next/
+coverage/
+*.tsbuildinfo
+
+# Variáveis de ambiente (mantém apenas os exemplos)
+.env
+.env.*
+!.env.example
+
+# Sistema
+.DS_Store
+*.log

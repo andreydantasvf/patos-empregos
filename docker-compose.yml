@@ -1,0 +1,59 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-patos_empregos}
+    healthcheck:
+      # -h 127.0.0.1 força TCP: o servidor temporário da inicialização do banco
+      # escuta só no socket unix e não pode contar como saudável.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - patos_empregos_pg_data:/var/lib/postgresql/data
+
+  api:
+    build: ./api
+    env_file: ./api/.env
+    environment:
+      # Vence o DATABASE_URL do api/.env (que aponta para localhost, usado fora
+      # do Docker): dentro da rede do Compose o banco é o serviço `database`.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-patos_empregos}
+      PORT: "3333"
+      APP_URL: http://localhost:5173
+      CORS_ORIGIN: http://localhost:5173
+      # Em produção as integrações (Cloudinary, Mercado Pago, Evolution) são
+      # obrigatórias; em desenvolvimento ficam opcionais.
+      NODE_ENV: development
+    # O CMD da imagem aplica as migrações, roda o seed do admin e sobe a API.
+    restart: on-failure
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3333:3333"
+
+  web:
+    build:
+      context: ./web
+      # NEXT_PUBLIC_* é embutido no `next build`, e quem chama a API é o
+      # navegador do host (localhost:3333). Estes args vencem o web/.env.
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3333
+        NEXT_PUBLIC_SITE_URL: http://localhost:5173
+    environment:
+      # O servidor do Next (páginas de vaga e sitemap) chama a API pela rede
+      # interna do Compose, onde localhost seria o próprio contêiner do web.
+      API_INTERNAL_URL: http://api:3333
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:5173:5173"
+
+volumes:
+  patos_empregos_pg_data:

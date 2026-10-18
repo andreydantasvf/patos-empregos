@@ -1,8 +1,9 @@
 import type { Job, Company } from '@/generated/prisma/client';
+import { env } from '@config/env';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://patosempregos.com.br';
+const APP_URL = env.APP_URL;
 
-const FOOTER = '—\n🌐 *Patos Empregos* · patosempregos.com.br\n_Vagas e Oportunidades em Patos-PB_';
+const FOOTER = `—\n🌐 *Patos Empregos* · ${new URL(APP_URL).host}\n_Vagas e Oportunidades em Patos-PB_`;
 
 const TYPE_LABELS: Record<string, string> = {
   CLT: 'CLT',

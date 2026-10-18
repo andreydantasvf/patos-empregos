@@ -1,3 +1,4 @@
+import { API_URL } from './config';
 import { ApiErrorResponse, ApiSuccessResponse } from './types';
 
 export class ApiError extends Error {
@@ -12,9 +13,7 @@ export class ApiError extends Error {
   }
 }
 
-const getBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-};
+const getBaseUrl = () => API_URL;
 
 const getToken = () => {
   if (typeof window !== 'undefined') {

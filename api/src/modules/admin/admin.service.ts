@@ -169,7 +169,7 @@ export const adminService = {
   async getSettings() {
     return {
       whatsappGroupId: env.WHATSAPP_GROUP_ID ?? null,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL ?? null,
+      appUrl: env.APP_URL,
     };
   },
 };

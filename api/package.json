@@ -5,6 +5,7 @@
   "author": "Genesis Web",
   "license": "MIT",
   "main": "dist/src/server.js",
+  "packageManager": "pnpm@10.34.7",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
     "build": "tsc && tsc-alias",
@@ -16,7 +17,6 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"prisma/**/*.ts\"",
-    "prepare": "husky install",
     "seed": "ts-node -r tsconfig-paths/register prisma/seed.ts"
   },
   "dependencies": {

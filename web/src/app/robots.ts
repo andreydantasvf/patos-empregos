@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/config";
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
@@ -9,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin/", "/minhas-vagas", "/empresa/", "/pagamento/"],
       },
     ],
-    sitemap: "https://patosempregos.com.br/sitemap.xml",
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

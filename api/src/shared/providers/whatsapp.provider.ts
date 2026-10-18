@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { env } from '../../config/env';
+import { AppError } from '../errors/AppError';
 
 interface SendGroupMessageDTO {
   groupId: string;
@@ -10,7 +11,7 @@ interface SendGroupMessageDTO {
 export const whatsappProvider = {
   async sendGroupMessage({ groupId, message, imageUrl }: SendGroupMessageDTO): Promise<void> {
     if (!env.EVOLUTION_URL || !env.EVOLUTION_API_KEY || !env.EVOLUTION_INSTANCE) {
-      throw new Error('Evolution API não configurada');
+      throw new AppError('Envio para o WhatsApp indisponível: Evolution API não configurada', 503);
     }
 
     const headers = { apikey: env.EVOLUTION_API_KEY };
