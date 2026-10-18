@@ -1,5 +1,7 @@
 # Patos Empregos
 
+> Demo: [patos-empregos-demo.vercel.app](https://patos-empregos-demo.vercel.app)
+
 Plataforma regional de vagas de emprego de Patos-PB. Empresas se cadastram, publicam vagas e pagam via PIX pelo Mercado Pago. Assim que o pagamento é confirmado, a vaga entra no site e é divulgada automaticamente em um grupo do WhatsApp. Os candidatos navegam e filtram as vagas sem precisar de conta. Um painel administrativo modera vagas e empresas e publica vagas gratuitas.
 
 ## Estrutura
@@ -41,6 +43,8 @@ Cada pasta é um projeto independente, com seu próprio `package.json`, lockfile
 
 ### Modo demonstração
 
+> Demo online: [patos-empregos-demo.vercel.app](https://patos-empregos-demo.vercel.app)
+
 A demo roda só o front-end, sem API nem banco, com 12 vagas fictícias de empresas de Patos-PB. Dá para percorrer a experiência do candidato: buscar por cargo ou empresa, filtrar por tipo de contrato e cargo e abrir os detalhes de cada vaga. Login, cadastro e publicação de vagas ficam desativados, e um banner no topo avisa que os dados são fictícios. A demo não é indexada por buscadores (`robots.txt` e `noindex`).
 
 Para rodar localmente, com Node.js 22+ e pnpm 10 (não precisa de `.env`):
@@ -56,7 +60,7 @@ Abra `http://localhost:5173`. As vagas ficam em [`web/src/lib/demo/jobs.ts`](web
 #### Publicar a demo na Vercel
 
 1. Em [vercel.com/new](https://vercel.com/new), importe o repositório `andreydantasvf/patos-empregos`.
-2. Defina **Root Directory** como `web` e confira se **Framework Preset** está como **Next.js**.
+2. Defina **Root Directory** como `web` e confira se **Framework Preset** está como **Next.js** (com "Other", o deploy termina sem erro, mas todas as páginas respondem 404).
 3. Adicione as variáveis de ambiente:
    - `NEXT_PUBLIC_DEMO_MODE=true`
    - `NEXT_PUBLIC_SITE_URL` com a URL do deploy (por exemplo, `https://patos-empregos-demo.vercel.app`), usada no Open Graph
@@ -64,6 +68,18 @@ Abra `http://localhost:5173`. As vagas ficam em [`web/src/lib/demo/jobs.ts`](web
 4. Faça o deploy.
 
 As variáveis `NEXT_PUBLIC_*` são embutidas no build: se mudá-las, faça um novo deploy.
+
+Pelo CLI, a partir de `web/`:
+
+```bash
+vercel link
+vercel env add NEXT_PUBLIC_DEMO_MODE production        # valor: true
+vercel env add NEXT_PUBLIC_SITE_URL production         # valor: URL do deploy
+vercel env add ENABLE_EXPERIMENTAL_COREPACK production # valor: 1
+vercel deploy --prod
+```
+
+Um projeto criado pelo CLI pode ficar com o preset "Other". Confira em **Settings → Build and Deployment** e mude para **Next.js** antes do deploy. O `web/.vercelignore` impede que o `.env.local` da sua máquina vá para o build. O `vercel link` acrescenta `.env*` ao `web/.gitignore` (o que passaria a ignorar o `.env.example`) e grava um `VERCEL_OIDC_TOKEN` no `.env.local`: desfaça a mudança no `.gitignore` e, se quiser, apague o token.
 
 ### Rodar com Docker
 
