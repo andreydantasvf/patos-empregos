@@ -1,6 +1,8 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { JobForm } from "@/components/job-form";
+import { Button } from "@/components/ui/button";
+import { DEMO_MODE } from "@/lib/config";
 import { ArrowLeft, CheckCircle, Clock, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -67,7 +69,23 @@ export default function PublicarVagaPage() {
             </div>
           </div>
 
-          <JobForm />
+          {DEMO_MODE ? (
+            <div className="mx-auto max-w-xl rounded-xl border bg-card p-8 text-center shadow-sm">
+              <h2 className="mb-2 text-xl font-semibold text-secondary">
+                Publicação desativada na demonstração
+              </h2>
+              <p className="mb-6 text-muted-foreground">
+                Na versão completa, a empresa preenche a vaga, paga via PIX e a vaga é
+                ativada e divulgada no WhatsApp automaticamente. Aqui você pode navegar
+                pelas vagas fictícias.
+              </p>
+              <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Link href="/#vagas">Ver vagas</Link>
+              </Button>
+            </div>
+          ) : (
+            <JobForm />
+          )}
         </div>
       </main>
       <Footer />

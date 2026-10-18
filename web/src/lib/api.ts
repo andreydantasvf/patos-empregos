@@ -1,4 +1,5 @@
-import { API_URL } from './config';
+import { API_URL, DEMO_MODE } from './config';
+import { DEMO_UNAVAILABLE_MESSAGE, demoResponse } from './demo/api';
 import { ApiErrorResponse, ApiSuccessResponse } from './types';
 
 export class ApiError extends Error {
@@ -26,6 +27,12 @@ export const apiFetch = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiSuccessResponse<T>> => {
+  if (DEMO_MODE) {
+    const demo = demoResponse<T>(endpoint, options.method);
+    if (demo) return demo;
+    throw new ApiError({ statusCode: 503, message: DEMO_UNAVAILABLE_MESSAGE });
+  }
+
   const url = `${getBaseUrl()}${endpoint}`;
   
   const headers = new Headers(options.headers || {});

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" font-family="Inter, 'Helvetica Neue', Arial, sans-serif">
+<rect width="1080" height="1080" fill="#2C3E50"/>
+<circle cx="980" cy="1000" r="300" fill="#FFD700" fill-opacity="0.08"/>
+<circle cx="80" cy="140" r="220" fill="#E67E22" fill-opacity="0.08"/>
+<rect x="80" y="90" width="500" height="64" rx="12" fill="#FFD700"/>
+<text x="330" y="134" font-size="32" font-weight="800" fill="#2C3E50" text-anchor="middle" letter-spacing="1">ESTAMOS CONTRATANDO</text>
+
+<text x="80" y="300" font-size="40" font-weight="600" fill="#FDFDFD" fill-opacity="0.7">Vaga de emprego em Patos-PB</text>
+<rect x="80" y="330" width="120" height="8" rx="4" fill="#E67E22"/>
+<text x="80" y="450" font-size="88" font-weight="800" fill="#FDFDFD">GARÇOM /</text><text x="80" y="550" font-size="88" font-weight="800" fill="#FDFDFD">GARÇONETE</text>
+<text x="80" y="640" font-size="46" font-weight="600" fill="#E67E22">Restaurante Sabor do Sertão</text>
+<rect x="80" y="710" width="266" height="64" rx="32" fill="#FDFDFD" fill-opacity="0.12"/><text x="213.0" y="753" font-size="34" font-weight="600" fill="#FDFDFD" text-anchor="middle">Temporário</text><rect x="80" y="794" width="665" height="64" rx="32" fill="#FDFDFD" fill-opacity="0.12"/><text x="412.5" y="837" font-size="34" font-weight="600" fill="#FDFDFD" text-anchor="middle">R$ 80,00 por noite + gorjetas</text>
+<rect x="0" y="960" width="1080" height="120" fill="#FFD700"/>
+<text x="80" y="1032" font-size="40" font-weight="800" fill="#2C3E50">Patos<tspan fill="#E67E22">Empregos</tspan></text>
+<text x="1000" y="1030" font-size="28" font-weight="600" fill="#2C3E50" text-anchor="end">Vaga fictícia · demonstração</text>
+</svg>

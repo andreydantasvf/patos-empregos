@@ -1,4 +1,5 @@
-import { SERVER_API_URL, SITE_URL } from "@/lib/config";
+import { DEMO_MODE, SERVER_API_URL, SITE_URL } from "@/lib/config";
+import { listDemoJobs } from "@/lib/demo/jobs";
 import type { MetadataRoute } from "next";
 
 const BASE = SITE_URL;
@@ -11,12 +12,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const res = await fetch(`${SERVER_API_URL}/jobs?limit=500&page=1`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return staticRoutes;
-    const body = await res.json();
-    const jobs: Array<{ id: string; updatedAt: string; plan: string }> = body.data ?? [];
+    let jobs: Array<{ id: string; updatedAt: string; plan: string }>;
+    if (DEMO_MODE) {
+      jobs = listDemoJobs({ limit: 500 }).jobs;
+    } else {
+      const res = await fetch(`${SERVER_API_URL}/jobs?limit=500&page=1`, {
+        next: { revalidate: 3600 },
+      });
+      if (!res.ok) return staticRoutes;
+      const body = await res.json();
+      jobs = body.data ?? [];
+    }
     const jobRoutes: MetadataRoute.Sitemap = jobs.map((job) => ({
       url: `${BASE}/vagas/${job.id}`,
       lastModified: new Date(job.updatedAt),
