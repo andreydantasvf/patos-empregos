@@ -1,0 +1,7 @@
+# Deploy pelo CLI: não envia arquivos locais de ambiente nem builds
+.env
+.env.*
+!.env.example
+node_modules
+.next
+*.tsbuildinfo
