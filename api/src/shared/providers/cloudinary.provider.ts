@@ -1,6 +1,7 @@
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import multer, { Multer } from 'multer';
 import { env } from '../../config/env';
+import { AppError } from '../errors/AppError';
 
 cloudinary.config({
   cloud_name: env.CLOUDINARY_CLOUD_NAME,
@@ -30,6 +31,10 @@ export const uploadToCloudinary = (
   folder = env.CLOUDINARY_FOLDER,
 ): Promise<UploadApiResponse> =>
   new Promise((resolve, reject) => {
+    if (!env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) {
+      return reject(new AppError('Upload de imagens indisponível: Cloudinary não configurado', 503));
+    }
+
     const stream = cloudinary.uploader.upload_stream(
       { folder, resource_type: 'image' },
       (error, result) => {

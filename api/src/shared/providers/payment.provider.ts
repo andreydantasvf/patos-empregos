@@ -174,27 +174,31 @@ function getMercadoPagoErrorMessage(error: unknown): string {
 }
 
 export class MercadoPagoProvider implements IPaymentProvider {
-  private client: MercadoPagoConfig;
-  private order: Order;
+  private orderClient?: Order;
 
-  constructor() {
-    const token = env.MERCADO_PAGO_ACCESS_TOKEN;
-    if (!token) {
-      throw new Error('MERCADO_PAGO_ACCESS_TOKEN is not defined');
+  // Criado no primeiro uso para a API subir sem o Mercado Pago configurado
+  private get order(): Order {
+    if (!this.orderClient) {
+      const token = env.MERCADO_PAGO_ACCESS_TOKEN;
+      if (!token) {
+        throw new AppError('Pagamentos indisponíveis: Mercado Pago não configurado', 503);
+      }
+      const client = new MercadoPagoConfig({
+        accessToken: token,
+        options: {
+          timeout: 10000,
+          idempotencyKey: crypto.randomUUID(),
+        },
+      });
+      this.orderClient = new Order(client);
     }
-    this.client = new MercadoPagoConfig({
-      accessToken: token,
-      options: {
-        timeout: 10000,
-        idempotencyKey: crypto.randomUUID(),
-      },
-    });
-    this.order = new Order(this.client);
+    return this.orderClient;
   }
 
   async generatePixPayment(data: PaymentRequest): Promise<PixPaymentResponse> {
+    const order = this.order;
     try {
-      const response = await this.order.create({
+      const response = await order.create({
         body: {
           type: 'online',
           processing_mode: 'automatic',

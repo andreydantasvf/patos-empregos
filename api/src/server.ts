@@ -17,7 +17,6 @@ async function bootstrap() {
 
     const server = app.listen(PORT, () => {
       logger.info(`🚀 Patos Empregos API rodando em http://localhost:${PORT}`);
-      logger.info(`📚 Documentação disponível em http://localhost:${PORT}/docs`);
       logger.info(`🌍 Ambiente: ${env.NODE_ENV}`);
     });
 
