@@ -39,6 +39,32 @@ Cada pasta é um projeto independente, com seu próprio `package.json`, lockfile
 
 ## Como rodar
 
+### Modo demonstração
+
+A demo roda só o front-end, sem API nem banco, com 12 vagas fictícias de empresas de Patos-PB. Dá para percorrer a experiência do candidato: buscar por cargo ou empresa, filtrar por tipo de contrato e cargo e abrir os detalhes de cada vaga. Login, cadastro e publicação de vagas ficam desativados, e um banner no topo avisa que os dados são fictícios. A demo não é indexada por buscadores (`robots.txt` e `noindex`).
+
+Para rodar localmente, com Node.js 22+ e pnpm 10 (não precisa de `.env`):
+
+```bash
+cd web
+pnpm install
+NEXT_PUBLIC_DEMO_MODE=true pnpm dev
+```
+
+Abra `http://localhost:5173`. As vagas ficam em [`web/src/lib/demo/jobs.ts`](web/src/lib/demo/jobs.ts), e as imagens em `web/public/demo/vagas/`.
+
+#### Publicar a demo na Vercel
+
+1. Em [vercel.com/new](https://vercel.com/new), importe o repositório `andreydantasvf/patos-empregos`.
+2. Defina **Root Directory** como `web` e confira se **Framework Preset** está como **Next.js**.
+3. Adicione as variáveis de ambiente:
+   - `NEXT_PUBLIC_DEMO_MODE=true`
+   - `NEXT_PUBLIC_SITE_URL` com a URL do deploy (por exemplo, `https://patos-empregos-demo.vercel.app`), usada no Open Graph
+   - `ENABLE_EXPERIMENTAL_COREPACK=1`, para a Vercel usar o pnpm 10 fixado em `packageManager`
+4. Faça o deploy.
+
+As variáveis `NEXT_PUBLIC_*` são embutidas no build: se mudá-las, faça um novo deploy.
+
 ### Rodar com Docker
 
 Pré-requisitos: Docker com Compose v2.
@@ -134,6 +160,7 @@ pnpm dev
 | `API_INTERNAL_URL` | Opcional: URL da API usada pelo servidor do Next, quando difere da pública (no Compose, `http://api:3333`) |
 | `NEXT_PUBLIC_WHATSAPP_URL` | Opcional: convite do grupo de vagas no WhatsApp |
 | `NEXT_PUBLIC_SUPPORT_WHATSAPP_URL` | Opcional: link de suporte no WhatsApp |
+| `NEXT_PUBLIC_DEMO_MODE` | `true` roda o site em modo demonstração, sem API; `false` (padrão) usa a API |
 
 ## Histórico
 
