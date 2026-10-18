@@ -1,0 +1,125 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum JobType {
+  CLT
+  PJ
+  FREELANCER
+  INTERNSHIP
+  TEMPORARY
+}
+
+enum JobPlan {
+  BASIC
+  FEATURED
+}
+
+enum JobStatus {
+  AGUARDANDO_PAGAMENTO
+  ATIVA
+  SUSPENSA
+  EXPIRADA
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  EXPIRED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  cnpj_cpf  String?
+  logo_url  String?
+  blocked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs     Job[]
+  payments Payment[]
+
+  @@index([email])
+  @@map("companies")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("admins")
+}
+
+model Job {
+  id                String    @id @default(cuid())
+  companyId         String
+  title             String    @db.VarChar(100)
+  description       String    @db.Text
+  area              String
+  type              JobType
+  salary            String?
+  image_url         String
+  application_link  String
+  plan              JobPlan   @default(BASIC)
+  status            JobStatus @default(AGUARDANDO_PAGAMENTO)
+  is_featured       Boolean   @default(false)
+  published_at      DateTime?
+  expires_at        DateTime?
+  whatsapp_sent_at  DateTime?
+  suspension_reason String?
+  requirements      String?   @db.Text
+  benefits          String?   @db.Text
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  company  Company   @relation(fields: [companyId], references: [id])
+  payments Payment[]
+
+  @@index([companyId])
+  @@index([area])
+  @@index([type])
+  @@index([plan])
+  @@index([status])
+  @@index([is_featured])
+  @@map("jobs")
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  jobId            String
+  companyId        String
+  plan             JobPlan
+  amount           Decimal       @db.Decimal(10, 2)
+  status           PaymentStatus @default(PENDING)
+  mp_payment_id    String?
+  mp_preference_id String?
+  confirmed_at     DateTime?
+  createdAt        DateTime      @default(now())
+
+  job     Job     @relation(fields: [jobId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([jobId])
+  @@index([companyId])
+  @@index([status])
+  @@index([mp_payment_id])
+  @@map("payments")
+}
