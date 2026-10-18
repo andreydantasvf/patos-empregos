@@ -1,4 +1,5 @@
-import { SITE_URL } from "@/lib/config";
+import { DEMO_MODE, SITE_URL } from "@/lib/config";
+import { DemoBanner } from "@/components/demo-banner";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
@@ -32,17 +33,20 @@ export const metadata: Metadata = {
   authors: [{ name: "Genesis Web" }],
   creator: "Genesis Web",
   publisher: "Patos Empregos",
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
+  // A demo só tem vagas fictícias: nada deve ser indexado
+  robots: DEMO_MODE
+    ? { index: false, follow: false }
+    : {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-video-preview": -1,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+        },
+      },
   openGraph: {
     type: "website",
     locale: "pt_BR",
@@ -107,6 +111,7 @@ export default function RootLayout({
         className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <AuthProvider>
+          {DEMO_MODE && <DemoBanner />}
           {children}
           {process.env.VERCEL === "1" && <Analytics />}
           <Toaster />

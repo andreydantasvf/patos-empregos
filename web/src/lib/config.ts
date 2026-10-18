@@ -7,3 +7,7 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333
 // URL da API usada pelo servidor do Next (páginas de vaga e sitemap). Só muda
 // quando o servidor alcança a API por outro endereço, como dentro do Docker.
 export const SERVER_API_URL = process.env.API_INTERNAL_URL ?? API_URL;
+
+// Modo demonstração: o site roda sem API, com vagas fictícias (src/lib/demo).
+// O valor é embutido no build.
+export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";

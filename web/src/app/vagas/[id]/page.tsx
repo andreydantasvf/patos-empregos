@@ -1,12 +1,15 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { SERVER_API_URL, SITE_URL } from "@/lib/config";
+import { DEMO_MODE, SERVER_API_URL, SITE_URL } from "@/lib/config";
+import { getDemoJob } from "@/lib/demo/jobs";
 import type { ApiSuccessResponse, JobDto } from "@/lib/types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { JobDetailClient } from "./job-detail-client";
 
 async function fetchJob(id: string): Promise<JobDto | null> {
+  if (DEMO_MODE) return getDemoJob(id);
+
   try {
     const res = await fetch(`${SERVER_API_URL}/jobs/${id}`, {
       next: { revalidate: 300 },

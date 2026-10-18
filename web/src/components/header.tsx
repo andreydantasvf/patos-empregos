@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
+import { DEMO_MODE } from "@/lib/config";
 import { LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -47,7 +48,7 @@ export function Header() {
             Para Empresas
           </Link>
 
-          {user ? (
+          {DEMO_MODE ? null : user ? (
             <>
               {user.type === "admin" && (
                 <Link
@@ -98,7 +99,7 @@ export function Header() {
             </>
           )}
 
-          {user && user?.type === "admin" ? (
+          {DEMO_MODE ? null : user && user?.type === "admin" ? (
             <Button
               asChild
               className="bg-primary text-primary-foreground hover:bg-primary/90"
@@ -154,7 +155,7 @@ export function Header() {
               Para Empresas
             </Link>
 
-            {user ? (
+            {DEMO_MODE ? null : user ? (
               <>
                 {user.type === "admin" && (
                   <Link
@@ -215,7 +216,7 @@ export function Header() {
               </>
             )}
 
-            {user && user?.type === "admin" ? (
+            {DEMO_MODE ? null : user && user?.type === "admin" ? (
               <Button
                 asChild
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
